@@ -18,15 +18,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class JWTAuthorRsaJoseJImpl implements JWTAuthor {
 
-	@Autowired private Environment env;
+	@Autowired
+    private Environment env;
 
 	@Autowired
 	@Qualifier("RsaJose4JWebKey")
 	JSONWebKey jwk;
 
-
 	Logger logger = LogManager.getLogger(JWTAuthorRsaJoseJImpl.class.getName());
-
 
 	@Override
 	public String createJWT(String subject, Map<String, List<String> > claims) {

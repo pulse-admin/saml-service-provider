@@ -38,6 +38,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.mockito.Mockito.when;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.boot.test.EnvironmentTestUtils;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -65,11 +69,15 @@ public class SSOControllerTest extends CommonTestSupport {
 
     private MockMvc mockMvc;
 
+    @Autowired
+    ConfigurableEnvironment env;
+
     @Before
     public void setUp()
     {
         MockitoAnnotations.initMocks(this);
         mockMvc = standaloneSetup(ssoController).setSingleView(mockView).build();
+        EnvironmentTestUtils.addEnvironment(env, "portalUrl=http://localhost:3000", "entityId=anEntity");
     }
 
     @Test

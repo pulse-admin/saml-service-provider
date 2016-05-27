@@ -93,12 +93,16 @@ public class JSONWebKeyRsaJoseJImpl implements JSONWebKey {
 		try {
 
 			File file = new File(keyPairPath);
-			file.getParentFile().mkdirs();
-			FileOutputStream fileOut = new FileOutputStream(file);
-			ObjectOutputStream out = new ObjectOutputStream(fileOut);
-			out.writeObject(rsaJsonWebKey);
-			out.close();
-			fileOut.close();
+			boolean dirsMade = file.getParentFile().mkdirs();
+            if (dirsMade) {
+                FileOutputStream fileOut = new FileOutputStream(file);
+                ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                out.writeObject(rsaJsonWebKey);
+                out.close();
+                fileOut.close();
+            } else {
+                throw new IOException("Error making directories");
+            }
 
 		} catch (IOException e) {
 			logger.error("Error saving key: " , e);

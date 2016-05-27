@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.opensaml.saml2.core.NameID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -39,11 +40,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes= TestConfig.class)
+@ContextConfiguration(classes= {com.vdenotaris.spring.boot.security.saml.web.TestConfig.class})
 public class SAMLUserDetailsServiceImplTest extends CommonTestSupport {
 
     @Autowired
     private SAMLUserDetailsServiceImpl userDetailsService;
+
+    @Autowired
+    Environment env;
 
     @Test
     public void testLoadUserBySAML() {

@@ -1,4 +1,6 @@
-keyLocation=C:\\JSONPulseRsaJoseJWebKey.txt
+portalUrl=http://localhost:3000
+entityId=entity
+keyLocation=C:\\JSONPulseRsaJoseJWebKeyTest.txt
 jwtAllowedClockSkew=30
 jwtIssuer=CALEMSA
 jwtAudience=CALEMSA

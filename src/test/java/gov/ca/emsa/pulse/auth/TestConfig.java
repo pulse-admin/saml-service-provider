@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.vdenotaris.spring.boot.security.saml.web;
+package gov.ca.emsa.pulse.auth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

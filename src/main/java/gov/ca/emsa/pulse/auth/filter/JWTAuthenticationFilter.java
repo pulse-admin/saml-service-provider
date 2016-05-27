@@ -6,6 +6,7 @@ import gov.ca.emsa.pulse.auth.jwt.JWTValidationException;
 import gov.ca.emsa.pulse.auth.user.User;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -48,7 +49,7 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
 				ErrorJSONObject errorObj = new ErrorJSONObject("Token must be presented in the form: Bearer token");
 				ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 				String json = ow.writeValueAsString(errorObj);
-				res.getOutputStream().write(json.getBytes());
+				res.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
 			}
 
 			if (jwt != null){
@@ -64,7 +65,7 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
 					ErrorJSONObject errorObj = new ErrorJSONObject(e.getMessage());
 					ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 					String json = ow.writeValueAsString(errorObj);
-					res.getOutputStream().write(json.getBytes());
+					res.getOutputStream().write(json.getBytes(StandardCharsets.UTF_8));
 
 				}
 			}

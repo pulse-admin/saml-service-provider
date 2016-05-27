@@ -3,6 +3,9 @@ package gov.ca.emsa.pulse.auth.authentication;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.ca.emsa.pulse.auth.jwt.JWTConsumer;
 import gov.ca.emsa.pulse.auth.jwt.JWTValidationException;
 //import gov.ca.emsa.pulse.auth.permission.GrantedPermission;
@@ -18,6 +21,8 @@ public class JWTUserConverterImpl implements JWTUserConverter {
 
 	@Autowired
 	private JWTConsumer jwtConsumer;
+
+	private static final Logger LOG = LoggerFactory.getLogger(JWTUserConverterImpl.class);
 
 	public JWTUserConverterImpl(){}
 
@@ -46,11 +51,12 @@ public class JWTUserConverterImpl implements JWTUserConverter {
 
 			String subject = (String) validatedClaims.remove("sub");
 
+            LOG.info(issuer.toString() + audience.toString() + issuedAt.toString() + notBefore.toString() + expires.toString() + jti.toString() + typ.toString());
+
 			user.setSubjectName(subject);
 
-
 			List<String> authorities = (List<String>) validatedClaims.get("Authorities");
-			List<String> identityInfo =(List<String>) validatedClaims.get("Identity");
+			List<String> identityInfo = (List<String>) validatedClaims.get("Identity");
 
 			for (String claim: authorities){
                 //				GrantedPermission permission = new GrantedPermission(claim);
