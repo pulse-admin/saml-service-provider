@@ -17,16 +17,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-//import gov.ca.emsa.pulse.auth.Util;
-//import gov.ca.emsa.pulse.auth.dao.impl.InvitationDAOImpl;
-//import gov.ca.emsa.pulse.auth.dto.UserDTO;
-//import gov.ca.emsa.pulse.auth.dto.UserPermissionDTO;
 import gov.ca.emsa.pulse.auth.jwt.JWTAuthor;
+import gov.ca.emsa.pulse.auth.jwt.JWTConsumer;
 import gov.ca.emsa.pulse.auth.jwt.JWTCreationException;
-//import gov.ca.emsa.pulse.auth.permission.GrantedPermission;
-//import gov.ca.emsa.pulse.auth.user.User;
-//import gov.ca.emsa.pulse.auth.user.UserManagementException;
-//import gov.ca.emsa.pulse.auth.user.UserRetrievalException;
 
 @Service
 public class UserAuthenticator implements Authenticator {
@@ -35,60 +28,24 @@ public class UserAuthenticator implements Authenticator {
 	@Autowired
 	private JWTAuthor jwtAuthor;
 
-	public String getJWT(String saml) throws JWTCreationException {
-		String jwt = null;
-		Map<String, List<String>> claims = new HashMap<String, List<String>>();
-
-		List<String> claimStrings = new ArrayList<String>();
-        //		Set<UserPermissionDTO> permissions = getUserPermissions(user);
-
-        claimStrings.add("login");
-        /*		for (UserPermissionDTO claim : permissions){
-			claimStrings.add(claim.getAuthority());
-            }*/
-		claims.put("Authorities", claimStrings);
-
-		List<String> identity = new ArrayList<String>();
-
-        identity.add(saml);
-
-		claims.put("Identity", identity);
-
-		jwt = jwtAuthor.createJWT(saml, claims);
-		return jwt;
-	}
+	@Autowired
+	private JWTConsumer jwtConsumer;
 
 	@Override
-	public String refreshJWT() throws JWTCreationException {
-        //		User user = Util.getCurrentUser();
+	public String refreshJWT(String oldJwt) throws JWTCreationException {
 		String jwt = null;
-        /*
 
-		if (user != null){
+        // Parse old Jwt
+        Map<String, Object> claims = jwtConsumer.consume(oldJwt);
+        List<String> authorityInfo = (List<String>) claims.get("Authorities");
+        List<String> identityInfo = (List<String>) claims.get("Identity");
+        Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
+        jwtClaims.put("Authorities", authorityInfo);
+        jwtClaims.put("Identity", identityInfo);
 
-			Map<String, List<String>> claims = new HashMap<String, List<String>>();
-			List<String> claimStrings = new ArrayList<String>();
+        // Create new jwt
+        jwt = jwtAuthor.createJWT(identityInfo.get(2), jwtClaims);
 
-			Set<GrantedPermission> permissions = user.getPermissions();
-
-			for (GrantedPermission claim : permissions){
-				claimStrings.add(claim.getAuthority());
-			}
-			claims.put("Authorities", claimStrings);
-
-			List<String> identity = new ArrayList<String>();
-
-			identity.add(user.getId().toString());
-			identity.add(user.getName());
-			identity.add(user.getFirstName());
-			identity.add(user.getLastName());
-
-			claims.put("Identity", identity);
-
-			jwt = jwtAuthor.createJWT(user.getSubjectName(), claims);
-		} else {
-			throw new JWTCreationException("Cannot generate token for Anonymous user.");
-            }*/
 		return jwt;
 	}
 

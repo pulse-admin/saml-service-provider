@@ -15,8 +15,10 @@ public class JWTAuthenticatedUser implements User {
 	private String subjectName;
 	private String firstName;
 	private String lastName;
+    private String email;
 	private Set<GrantedPermission> permissions = new HashSet<GrantedPermission>();
 	private boolean authenticated = true;
+    private String jwt;
 
 	public JWTAuthenticatedUser(){
 		this.subjectName = null;
@@ -49,6 +51,14 @@ public class JWTAuthenticatedUser implements User {
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
 	public Set<GrantedPermission> getPermissions() {
 		return this.permissions;
@@ -122,6 +132,14 @@ public class JWTAuthenticatedUser implements User {
 	public void setAuthenticated(boolean arg0) throws IllegalArgumentException {
 		this.authenticated = arg0;
 	}
+
+    public String getJwt() {
+        return jwt;
+    }
+
+    public void setJwt(String jwt) {
+        this.jwt = jwt;
+    }
 
 	@Override
 	public String getName() {

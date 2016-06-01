@@ -25,7 +25,8 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages= {"gov.ca.emsa.pulse.auth.**",
+                                          "com.vdenotaris.spring.boot.security.saml.web.**"})
 @PropertySource("classpath:/environment.test.properties")
 public class TestConfig extends WebMvcConfigurerAdapter implements EnvironmentAware {
     private Environment env;

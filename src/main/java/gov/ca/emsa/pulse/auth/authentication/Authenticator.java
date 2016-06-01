@@ -7,7 +7,6 @@ import gov.ca.emsa.pulse.auth.jwt.JWTCreationException;
 
 public interface Authenticator {
 
-	public String getJWT(String saml) throws JWTCreationException;
-	public String refreshJWT() throws JWTCreationException;
+	public String refreshJWT(String jwt) throws JWTCreationException;
 
 }

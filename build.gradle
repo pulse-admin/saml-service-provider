@@ -22,6 +22,9 @@ jar {
 
 findbugs {
   effort = 'max'
+  ignoreFailures = true
+  reportsDir = file("$project.buildDir/reports/tests")
+  reportLevel = 'low'
 }
 
 tasks.withType(FindBugs) {
@@ -31,10 +34,10 @@ tasks.withType(FindBugs) {
     }
 }
 
-group = 'com.vdenotaris.spring'
-version = '1.2.1.RELEASE'
+group = 'gov.ca.emsa.pulse'
+version = '0.0.1-SNAPSHOT'
 
-description = """Spring Boot and Spring Security SAML integration sample"""
+description = """Spring Boot SAML Service Provider for PULSE"""
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

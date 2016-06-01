@@ -28,7 +28,8 @@ public class GrantedPermission implements GrantedAuthority {
 			return false;
 
 		GrantedPermission claim = (GrantedPermission) obj;
-		return claim.getAuthority() == this.getAuthority() || claim.getAuthority().equals(this.getAuthority());
+		return claim.getAuthority().equals(this.getAuthority());
+        //        return claim.getAuthority().equals == this.getAuthority() || claim.getAuthority().equals(this.getAuthority());
 	}
 
 	@Override

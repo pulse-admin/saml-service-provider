@@ -26,7 +26,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.SpringApplicationContextLoader;
 import org.springframework.core.MethodParameter;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -43,9 +42,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
+import gov.ca.emsa.pulse.auth.user.JWTAuthenticatedUser;
+
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(loader = SpringApplicationContextLoader.class,
-        classes = {TestConfig.class})
+@ContextConfiguration (loader = SpringApplicationContextLoader.class, classes = {TestConfig.class})
 @WebAppConfiguration
 public class LandingControllerTest extends CommonTestSupport {
 
@@ -62,33 +62,31 @@ public class LandingControllerTest extends CommonTestSupport {
     {
         MockitoAnnotations.initMocks(this);
         mockMvc = standaloneSetup(landingController)
-                .setCustomArgumentResolvers(new MockArgumentResolver())
-                .setSingleView(mockView).build();
+            .setCustomArgumentResolvers(new MockArgumentResolver())
+            .setSingleView(mockView).build();
     }
 
     @Test
-    public void testAnonymousLanding() throws Exception {
+    public void testSecuredLanding() throws Exception {
         mockMvc.perform(get("/landing").session(mockHttpSession(true)))
-                .andExpect(status().isOk())
-                .andExpect(model().attribute("username", USER_NAME))
-                .andExpect(view().name("landing"));
+            .andExpect(status().isOk())
+            //            .andExpect(model().attribute("username", USER_NAME))
+            .andExpect(view().name("landing"));
     }
 
     private static class MockArgumentResolver implements HandlerMethodArgumentResolver
     {
         @Override
         public boolean supportsParameter(MethodParameter methodParameter) {
-            return methodParameter.getParameterType().equals(User.class);
+            return methodParameter.getParameterType().equals(JWTAuthenticatedUser.class);
         }
 
         @Override
         public Object resolveArgument(MethodParameter methodParameter,
                                       ModelAndViewContainer modelAndViewContainer,
                                       NativeWebRequest nativeWebRequest,
-                                      WebDataBinderFactory webDataBinderFactory)
-                                    		  throws Exception {
+                                      WebDataBinderFactory webDataBinderFactory) throws Exception {
             return CommonTestSupport.USER_DETAILS;
         }
     }
-
 }

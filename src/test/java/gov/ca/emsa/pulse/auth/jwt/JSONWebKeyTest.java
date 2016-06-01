@@ -7,6 +7,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 import org.junit.Test;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -20,9 +21,13 @@ public class JSONWebKeyTest {
 	@Autowired Environment env;
 	@Autowired JSONWebKey jsonWebKey;
 
+    @Before
+    public void init() {
+		jsonWebKey.createOrLoadKey();
+    }
+
 	@Test
 	public void testSaveKey() throws ClassNotFoundException, IOException{
-
 		jsonWebKey.saveKey(env.getProperty("keyLocation"));
 		PublicKey originalPublicKey = jsonWebKey.getPublicKey();
 		PrivateKey originalPrivateKey = jsonWebKey.getPrivateKey();
@@ -30,12 +35,10 @@ public class JSONWebKeyTest {
 		jsonWebKey.loadSavedKey(env.getProperty("keyLocation"));
 		assertEquals(originalPublicKey, jsonWebKey.getPublicKey());
 		assertEquals(originalPrivateKey, jsonWebKey.getPrivateKey());
-
 	}
 
 	@Test
 	public void testLoadSavedKey() throws ClassNotFoundException, IOException{
-
 		jsonWebKey.saveKey(env.getProperty("keyLocation"));
 		PublicKey originalPublicKey = jsonWebKey.getPublicKey();
 		PrivateKey originalPrivateKey = jsonWebKey.getPrivateKey();
@@ -43,14 +46,10 @@ public class JSONWebKeyTest {
 		jsonWebKey.loadSavedKey(env.getProperty("keyLocation"));
 		assertEquals(originalPublicKey, jsonWebKey.getPublicKey());
 		assertEquals(originalPrivateKey, jsonWebKey.getPrivateKey());
-
 	}
 
 	@Test
 	public void testCreateOrLoadKey(){
-
 		jsonWebKey.createOrLoadKey();
-
 	}
-
 }

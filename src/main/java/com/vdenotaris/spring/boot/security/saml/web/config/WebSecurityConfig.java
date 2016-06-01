@@ -331,7 +331,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         if (env.containsProperty("portalUrl")) {
             successRedirectHandler.setDefaultTargetUrl(env.getProperty("portalUrl"));
         } else {
-            successRedirectHandler.setDefaultTargetUrl("/home");
+            successRedirectHandler.setDefaultTargetUrl("/landing");
         }
         return successRedirectHandler;
     }
@@ -374,7 +374,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public SimpleUrlLogoutSuccessHandler successLogoutHandler() {
         SimpleUrlLogoutSuccessHandler successLogoutHandler = new SimpleUrlLogoutSuccessHandler();
-        successLogoutHandler.setDefaultTargetUrl("/");
+        if (env.containsProperty("portalUrl")) {
+            successLogoutHandler.setDefaultTargetUrl(env.getProperty("portalUrl"));
+        } else {
+            successLogoutHandler.setDefaultTargetUrl("/landing");
+        }
         return successLogoutHandler;
     }
 

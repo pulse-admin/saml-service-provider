@@ -15,7 +15,6 @@ import gov.ca.emsa.pulse.auth.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class JWTUserConverterImpl implements JWTUserConverter {
 
@@ -47,11 +46,18 @@ public class JWTUserConverterImpl implements JWTUserConverter {
 			Object notBefore = validatedClaims.remove("nbf");
 			Object expires = validatedClaims.remove("exp");
 			Object jti = validatedClaims.remove("jti");
-			Object typ = validatedClaims.remove("typ");
+            //			Object typ = validatedClaims.remove("typ");
 
 			String subject = (String) validatedClaims.remove("sub");
 
-            LOG.info(issuer.toString() + audience.toString() + issuedAt.toString() + notBefore.toString() + expires.toString() + jti.toString() + typ.toString());
+            LOG.info( "jwt claims" );
+            LOG.info( issuer.toString() );
+            LOG.info( audience.toString() );
+            LOG.info( issuedAt.toString() );
+            LOG.info( notBefore.toString() );
+            LOG.info( expires.toString() );
+            LOG.info( jti.toString() );
+            //            LOG.info( typ.toString());
 
 			user.setSubjectName(subject);
 
@@ -63,14 +69,13 @@ public class JWTUserConverterImpl implements JWTUserConverter {
 				user.addPermission(claim);
 			}
 
-			String idString = identityInfo.get(0);
-			Long userId = Long.valueOf(idString);
-			String firstName = identityInfo.get(2);
-			String lastName = identityInfo.get(3);
+			String firstName = identityInfo.get(0);
+			String lastName = identityInfo.get(1);
+			String email = identityInfo.get(2);
 
-			user.setId(userId);
 			user.setFirstName(firstName);
 			user.setLastName(lastName);
+            user.setEmail(email);
 
 		}
 		return user;

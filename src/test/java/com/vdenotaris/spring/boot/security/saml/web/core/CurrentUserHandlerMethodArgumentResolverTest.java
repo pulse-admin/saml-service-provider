@@ -25,7 +25,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.support.WebArgumentResolver;
@@ -41,6 +40,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import gov.ca.emsa.pulse.auth.user.JWTAuthenticatedUser;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes= TestConfig.class)
@@ -58,9 +59,9 @@ public class CurrentUserHandlerMethodArgumentResolverTest extends CommonTestSupp
     @Before
     public void init() throws NoSuchMethodException {
         validParam = new MethodParameter(
-        		MethodSamples.class.getMethod("validUser", User.class), 0);
+        		MethodSamples.class.getMethod("validUser", JWTAuthenticatedUser.class), 0);
         notAnnotatedParam = new MethodParameter(
-        		MethodSamples.class.getMethod("notAnnotatedUser", User.class), 0);
+        		MethodSamples.class.getMethod("notAnnotatedUser", JWTAuthenticatedUser.class), 0);
         wrongTypeParam = new MethodParameter(
         		MethodSamples.class.getMethod("wrongTypeUser", Object.class), 0);
     }
@@ -78,7 +79,7 @@ public class CurrentUserHandlerMethodArgumentResolverTest extends CommonTestSupp
         ModelAndViewContainer mavContainer = mock(ModelAndViewContainer.class);
         WebDataBinderFactory binderFactory = mock(WebDataBinderFactory.class);
         NativeWebRequest webRequest = mock(NativeWebRequest.class);
-        User stubUser = new User(USER_NAME, "", Collections.emptyList());
+        JWTAuthenticatedUser stubUser = new JWTAuthenticatedUser(USER_NAME);
         Principal stubPrincipal = new UsernamePasswordAuthenticationToken(stubUser, null);
         when(webRequest.getUserPrincipal()).thenReturn(stubPrincipal);
 
@@ -94,9 +95,9 @@ public class CurrentUserHandlerMethodArgumentResolverTest extends CommonTestSupp
     @SuppressWarnings("unused")
     private static final class MethodSamples {
 
-        public void validUser(@CurrentUser User user) {}
+        public void validUser(@CurrentUser JWTAuthenticatedUser user) {}
 
-        public void notAnnotatedUser(User user) {}
+        public void notAnnotatedUser(JWTAuthenticatedUser user) {}
 
         public void wrongTypeUser(@CurrentUser Object user) {}
     }

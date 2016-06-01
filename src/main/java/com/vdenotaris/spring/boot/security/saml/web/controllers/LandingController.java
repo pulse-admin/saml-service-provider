@@ -11,23 +11,32 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License. 
+ * limitations under the License.
  */
 
 package com.vdenotaris.spring.boot.security.saml.web.controllers;
 
-import org.springframework.security.core.userdetails.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.vdenotaris.spring.boot.security.saml.web.stereotypes.CurrentUser;
+import gov.ca.emsa.pulse.auth.user.JWTAuthenticatedUser;
 
 @Controller
 public class LandingController {
 
-	@RequestMapping("/landing")
-	public String landing(@CurrentUser User user, Model model) {
+    //Logger
+	private static final Logger LOG = LoggerFactory.getLogger(LandingController.class);
+
+    @RequestMapping("/landing")
+	public String landing(@CurrentUser JWTAuthenticatedUser user, Model model) {
+        LOG.info(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
+        user = (JWTAuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LOG.info(user.toString());
 		model.addAttribute("username", 	user.getUsername());
 		return "landing";
 	}

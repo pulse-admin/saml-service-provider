@@ -45,6 +45,8 @@ public class JSONWebKeyRsaJoseJImpl implements JSONWebKey {
 			} catch (ClassNotFoundException | IOException e1) {
 
 				logger.error("Key not found or error loading key. Creating new key. " , e1);
+				logger.info("Key not found or error loading key. Creating new key. " , e1);
+				logger.debug("Key not found or error loading key. Creating new key. " , e1);
 
 				try {
 			        RsaKeyUtil keyUtil = new RsaKeyUtil();
@@ -93,15 +95,18 @@ public class JSONWebKeyRsaJoseJImpl implements JSONWebKey {
 		try {
 
 			File file = new File(keyPairPath);
-			boolean dirsMade = file.getParentFile().mkdirs();
-            if (dirsMade) {
+            File parent = file.getParentFile();
+            if (!parent.exists() && !parent.mkdirs()) {
+                throw new IOException("Error making directories");
+            } else {
                 FileOutputStream fileOut = new FileOutputStream(file);
                 ObjectOutputStream out = new ObjectOutputStream(fileOut);
-                out.writeObject(rsaJsonWebKey);
-                out.close();
-                fileOut.close();
-            } else {
-                throw new IOException("Error making directories");
+                try {
+                    out.writeObject(rsaJsonWebKey);
+                } finally {
+                    out.close();
+                    fileOut.close();
+                }
             }
 
 		} catch (IOException e) {
@@ -114,10 +119,11 @@ public class JSONWebKeyRsaJoseJImpl implements JSONWebKey {
 		FileInputStream fileIn = new FileInputStream(keyPairPath);
 		ObjectInputStream is = new ObjectInputStream(fileIn);
 
-		rsaJsonWebKey = (RsaJsonWebKey) is.readObject();
-
-		is.close();
-		fileIn.close();
-
+        try {
+            rsaJsonWebKey = (RsaJsonWebKey) is.readObject();
+        } finally {
+            is.close();
+            fileIn.close();
+        }
 	}
 }

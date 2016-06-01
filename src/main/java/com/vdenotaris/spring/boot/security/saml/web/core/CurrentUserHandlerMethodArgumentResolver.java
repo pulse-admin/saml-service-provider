@@ -11,7 +11,7 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License. 
+ * limitations under the License.
  */
 
 package com.vdenotaris.spring.boot.security.saml.web.core;
@@ -20,7 +20,6 @@ import java.security.Principal;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebArgumentResolver;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -29,6 +28,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.vdenotaris.spring.boot.security.saml.web.stereotypes.CurrentUser;
+import gov.ca.emsa.pulse.auth.user.JWTAuthenticatedUser;
 
 @Component
 public class CurrentUserHandlerMethodArgumentResolver implements
@@ -36,7 +36,7 @@ public class CurrentUserHandlerMethodArgumentResolver implements
 
 	public boolean supportsParameter(MethodParameter methodParameter) {
 		return methodParameter.getParameterAnnotation(CurrentUser.class) != null
-				&& methodParameter.getParameterType().equals(User.class);
+				&& methodParameter.getParameterType().equals(JWTAuthenticatedUser.class);
 	}
 
 	public Object resolveArgument(MethodParameter methodParameter,
@@ -44,7 +44,7 @@ public class CurrentUserHandlerMethodArgumentResolver implements
 			WebDataBinderFactory binderFactory) throws Exception {
 		if (this.supportsParameter(methodParameter)) {
 			Principal principal = (Principal) webRequest.getUserPrincipal();
-			return (User) ((Authentication) principal).getPrincipal();
+			return (JWTAuthenticatedUser) ((Authentication) principal).getPrincipal();
 		} else {
 			return WebArgumentResolver.UNRESOLVED;
 		}
