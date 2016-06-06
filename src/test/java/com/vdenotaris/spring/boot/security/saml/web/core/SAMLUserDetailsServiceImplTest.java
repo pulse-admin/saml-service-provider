@@ -22,9 +22,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.opensaml.saml2.core.NameID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.saml.SAMLCredential;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -38,12 +38,18 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import gov.ca.emsa.pulse.auth.permission.GrantedPermission;
+import gov.ca.emsa.pulse.auth.user.JWTAuthenticatedUser;
+
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes= TestConfig.class)
+@ContextConfiguration(classes= {com.vdenotaris.spring.boot.security.saml.web.TestConfig.class})
 public class SAMLUserDetailsServiceImplTest extends CommonTestSupport {
 
     @Autowired
     private SAMLUserDetailsServiceImpl userDetailsService;
+
+    @Autowired
+    Environment env;
 
     @Test
     public void testLoadUserBySAML() {
@@ -59,21 +65,16 @@ public class SAMLUserDetailsServiceImplTest extends CommonTestSupport {
 
         // / then
         assertNotNull(actual);
-        assertTrue(actual instanceof User);
+        assertTrue(actual instanceof JWTAuthenticatedUser);
 
-        User user = (User)actual;
-        assertEquals(USER_NAME, user.getUsername());
-        assertEquals(USER_PASSWORD, user.getPassword());
-        assertTrue(user.isEnabled());
-        assertTrue(user.isAccountNonExpired());
-        assertTrue(user.isCredentialsNonExpired());
-        assertTrue(user.isAccountNonLocked());
+        JWTAuthenticatedUser user = (JWTAuthenticatedUser)actual;
+        assertEquals(USER_NAME, user.getSubjectName());
         assertEquals(1, user.getAuthorities().size());
 
         List<GrantedAuthority> authorities = new ArrayList<>(user.getAuthorities());
         Object authority = authorities.get(0);
 
-        assertTrue(authority instanceof SimpleGrantedAuthority);
-        assertEquals(USER_ROLE, ((SimpleGrantedAuthority)authority).getAuthority());
+        assertTrue(authority instanceof GrantedPermission);
+        assertEquals(USER_ROLE, ((GrantedPermission)authority).getAuthority());
     }
 }

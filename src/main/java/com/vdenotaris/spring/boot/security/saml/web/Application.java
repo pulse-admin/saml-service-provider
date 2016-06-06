@@ -19,7 +19,8 @@ package com.vdenotaris.spring.boot.security.saml.web;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages= {"gov.ca.emsa.pulse.auth.**",
+                                          "com.vdenotaris.spring.boot.security.saml.web.**"})
 public class Application {
 
     public static void main(String[] args) {

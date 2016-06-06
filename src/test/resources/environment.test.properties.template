@@ -1,0 +1,8 @@
+portalUrl=http://localhost:3000
+entityId=entity
+keyLocation=C:\\JSONPulseRsaJoseJWebKeyTest.txt
+jwtAllowedClockSkew=30
+jwtIssuer=CALEMSA
+jwtAudience=CALEMSA
+jwtExpirationTimeMinutesInTheFuture=30
+jwtNotBeforeMinutesInThePast=4

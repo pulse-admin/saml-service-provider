@@ -1,0 +1,76 @@
+buildscript {
+	ext {
+		springBootVersion = '1.3.3.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'spring-boot'
+apply plugin: 'findbugs'
+
+jar {
+  baseName = 'saml-sp'
+  version = '0.0.1-SNAPSHOT'
+}
+
+findbugs {
+  effort = 'max'
+  ignoreFailures = true
+  reportsDir = file("$project.buildDir/reports/tests")
+  reportLevel = 'low'
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
+
+group = 'gov.ca.emsa.pulse'
+version = '0.0.1-SNAPSHOT'
+
+description = """Spring Boot SAML Service Provider for PULSE"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+  //  maven { url "http://repo.maven.apache.org/maven2" }
+  mavenCentral()
+}
+
+jar {
+  manifest {
+    attributes 'Main-Class': 'com.vdenotaris.spring.boot.security.saml.web.Application'
+  }
+}
+
+dependencies {
+  compile(group: 'org.springframework.boot', name: 'spring-boot-starter', version:'1.3.2.RELEASE')
+  //  {
+    //    exclude(module: 'spring-boot-starter-logging')
+  //  }
+  compile('org.springframework.boot:spring-boot-starter-web')
+  //  compile group: 'org.springframework.boot', name: 'spring-boot-starter-log4j', version:'1.3.2.RELEASE'
+  compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version:'1.3.2.RELEASE'
+  compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version:'1.3.2.RELEASE'
+  compile(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version:'1.3.2.RELEASE')
+  compile group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.5.1'
+  //  compile group: 'org.springframework', name: 'spring-tx', version: '4.2.6.RELEASE'
+  //  {
+    //    exclude(module: 'commons-logging')
+  //  }
+  compile group: 'org.springframework.security.extensions', name: 'spring-security-saml2-core', version:'1.0.1.RELEASE'
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '2.12'
+}
