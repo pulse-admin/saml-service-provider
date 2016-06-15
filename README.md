@@ -48,7 +48,7 @@ I would like to say thank you to *Alexey Syrtsev* ([github.com/airleks](https://
 
 ### License
 
-    Copyright 2016 Ai
+    Copyright 2016 Audacious Inquiry, LLC
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.

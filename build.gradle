@@ -1,13 +1,14 @@
 buildscript {
-	ext {
-		springBootVersion = '1.3.3.RELEASE'
-	}
-	repositories {
-		mavenCentral()
-	}
-	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-	}
+  ext {
+    springBootVersion = '1.3.3.RELEASE'
+  }
+  repositories {
+    mavenLocal()
+    mavenCentral()
+  }
+  dependencies {
+    classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+  }
 }
 
 apply plugin: 'java'
@@ -28,10 +29,10 @@ findbugs {
 }
 
 tasks.withType(FindBugs) {
-    reports {
-        xml.enabled = false
-        html.enabled = true
-    }
+  reports {
+    xml.enabled = false
+    html.enabled = true
+  }
 }
 
 group = 'gov.ca.emsa.pulse'
@@ -43,7 +44,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
-  //  maven { url "http://repo.maven.apache.org/maven2" }
+  mavenLocal()
   mavenCentral()
 }
 
@@ -55,22 +56,15 @@ jar {
 
 dependencies {
   compile(group: 'org.springframework.boot', name: 'spring-boot-starter', version:'1.3.2.RELEASE')
-  //  {
-    //    exclude(module: 'spring-boot-starter-logging')
-  //  }
-  compile('org.springframework.boot:spring-boot-starter-web')
-  //  compile group: 'org.springframework.boot', name: 'spring-boot-starter-log4j', version:'1.3.2.RELEASE'
+  compile('org.springframework.boot:spring-boot-starter-web:1.3.2.RELEASE')
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version:'1.3.2.RELEASE'
   compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version:'1.3.2.RELEASE'
   compile(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version:'1.3.2.RELEASE')
   compile group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.5.1'
-  //  compile group: 'org.springframework', name: 'spring-tx', version: '4.2.6.RELEASE'
-  //  {
-    //    exclude(module: 'commons-logging')
-  //  }
   compile group: 'org.springframework.security.extensions', name: 'spring-security-saml2-core', version:'1.0.1.RELEASE'
+  compile 'gov.ca.emsa.pulse:auth:0.0.1-SNAPSHOT'
 }
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '2.12'
+  gradleVersion = '2.12'
 }
