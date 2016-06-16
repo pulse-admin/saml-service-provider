@@ -290,6 +290,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		return extendedMetadataDelegate;
 	}
 
+	@Bean
+	@Qualifier("idp-testshib")
+	public ExtendedMetadataDelegate testShibExtendedMetadataProvider()
+			throws MetadataProviderException {
+		String idpTestShibURL = "http://www.testshib.org/metadata/testshib-providers.xml";
+		Timer backgroundTaskTimer = new Timer(true);
+		HTTPMetadataProvider httpMetadataProvider = new HTTPMetadataProvider(
+				backgroundTaskTimer, httpClient(), idpTestShibURL);
+		httpMetadataProvider.setParserPool(parserPool());
+		ExtendedMetadataDelegate extendedMetadataDelegate =
+				new ExtendedMetadataDelegate(httpMetadataProvider, extendedMetadata());
+		extendedMetadataDelegate.setMetadataTrustCheck(true);
+		extendedMetadataDelegate.setMetadataRequireSignature(false);
+		return extendedMetadataDelegate;
+	}
+
     // IDP Metadata configuration - paths to metadata of IDPs in circle of trust
     // is here
     // Do no forget to call iniitalize method on providers
@@ -298,6 +314,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public CachingMetadataManager metadata() throws MetadataProviderException {
         List<MetadataProvider> providers = new ArrayList<MetadataProvider>();
         providers.add(ssoCircleExtendedMetadataProvider());
+        providers.add(testShibExtendedMetadataProvider());
         return new CachingMetadataManager(providers);
     }
 
