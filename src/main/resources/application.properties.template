@@ -1,5 +1,13 @@
+#for embedded gradle tomcat
+server.port=8080
+
+#saml entity
 entityId=urn:test:ainq:state:name
+
+#return url
 portalUrl=http://localhost:3000
+
+#jwt parameters
 keyLocation=C:\\JSONPulseRsaJoseJWebKey.txt
 jwtAllowedClockSkew=30
 jwtIssuer=CALEMSA
