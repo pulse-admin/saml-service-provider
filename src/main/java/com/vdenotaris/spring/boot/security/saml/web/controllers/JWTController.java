@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.vdenotaris.spring.boot.security.saml.web.stereotypes.CurrentUser;
 import gov.ca.emsa.pulse.auth.user.JWTAuthenticatedUser;
 
 @RestController
@@ -22,9 +21,8 @@ public class JWTController {
     @RequestMapping(value="/jwt", method= RequestMethod.GET,
                     produces="application/json; charset=utf-8")
 	public String getJwt() {
-        LOG.info(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
         JWTAuthenticatedUser user = (JWTAuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        LOG.info(user.getJwt());
+        LOG.info("Retrieving token: " + user.getJwt());
         if (user != null && user.getJwt() != null) {
             String jwtJSON = "{\"token\": \""+user.getJwt()+"\"}";
             return jwtJSON;
