@@ -35,6 +35,10 @@ tasks.withType(FindBugs) {
   }
 }
 
+springBoot {
+  executable = true
+}
+
 group = 'gov.ca.emsa.pulse'
 version = '0.0.1-SNAPSHOT'
 

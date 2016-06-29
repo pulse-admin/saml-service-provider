@@ -63,9 +63,19 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
         jwtClaims.put("Authorities", new ArrayList<String>());
         jwtClaims.get("Authorities").add("ROLE_USER");
         jwtClaims.put("Identity", new ArrayList<String>());
-        jwtClaims.get("Identity").add(credential.getAttributeAsString("FirstName"));
-        jwtClaims.get("Identity").add(credential.getAttributeAsString("LastName"));
-        jwtClaims.get("Identity").add(credential.getAttributeAsString("EmailAddress"));
+        if (credential.getAttribute("FirstName") != null) {
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("FirstName"));
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("LastName"));
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("EmailAddress"));
+        } else if (credential.getAttribute("urn:oid:2.5.4.42") != null) {
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("urn:oid:2.5.4.42"));
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("urn:oid:2.5.4.4"));
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("urn:oid:1.3.6.1.4.1.5923.1.1.1.6"));
+        } else {
+            jwtClaims.get("Identity").add("FirstName");
+            jwtClaims.get("Identity").add("LastName");
+            jwtClaims.get("Identity").add("EmailAddress");
+        }
 
         String jwt = jwtAuthor.createJWT(userID, jwtClaims);
         LOG.info("JWT is " + jwt);
