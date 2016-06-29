@@ -6,7 +6,28 @@
 
 This project expands upon the sample Spring Boot SAML project made by Vincenzo De Notaris with customizations required for deployment in a PULSE environment.
 
----------
+## Configuration
+
+```sh
+$ git clone https://github.com/pulse-admin/saml-service-provider.git
+$ cd saml-service-provider
+$ cp src/main/resources/application.properties.template src/main/resources/application.properties
+$ # change entityId & keyLocation to appropriate values
+$ nano src/main/resources/application.properties
+$ cp src/main/resources/environment.test.properties.template src/main/resources/environment.test.properties
+$ # change keyLocation to appropriate value
+$ nano src/main/resources/environment.test.properties
+```
+
+## Build & run
+
+``./gradlew bootRun`` will compile, build, and run the application, by default on http://localhost:8080
+
+## Dependencies
+
+This project depends on the [PULSE Authentication Module](https://github.com/pulse-admin/api/tree/development/pulse/auth) for JWT authoring & consuming. That project must be compiled and installed before this project will compile.
+
+====================
 
 ## References
 
