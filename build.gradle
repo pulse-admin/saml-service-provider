@@ -16,6 +16,10 @@ apply plugin: 'maven'
 apply plugin: 'spring-boot'
 apply plugin: 'findbugs'
 
+springBoot {
+  executable = true
+}
+
 jar {
   baseName = 'saml-sp'
   version = '0.0.1-SNAPSHOT'
@@ -33,10 +37,6 @@ tasks.withType(FindBugs) {
     xml.enabled = false
     html.enabled = true
   }
-}
-
-springBoot {
-  executable = true
 }
 
 group = 'gov.ca.emsa.pulse'

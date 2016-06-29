@@ -14,9 +14,9 @@ $ cd saml-service-provider
 $ cp src/main/resources/application.properties.template src/main/resources/application.properties
 $ # change entityId & keyLocation to appropriate values
 $ nano src/main/resources/application.properties
-$ cp src/main/resources/environment.test.properties.template src/main/resources/environment.test.properties
+$ cp src/test/resources/environment.test.properties.template src/test/resources/environment.test.properties
 $ # change keyLocation to appropriate value
-$ nano src/main/resources/environment.test.properties
+$ nano src/test/resources/environment.test.properties
 ```
 
 ## Build & run
