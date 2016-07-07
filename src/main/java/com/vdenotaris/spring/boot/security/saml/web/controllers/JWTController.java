@@ -59,7 +59,11 @@ public class JWTController {
         Map<String, Object> claims = jwtConsumer.consume(oldJwt);
         List<String> authorityInfo = (List<String>) claims.get("Authorities");
         List<String> identityInfo = (List<String>) claims.get("Identity");
-        identityInfo.add(acf);
+        if (identityInfo.size() <= 3) {
+            identityInfo.add(acf);
+        } else {
+            identityInfo.set(3,acf);
+        }
         Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
         jwtClaims.put("Authorities", authorityInfo);
         jwtClaims.put("Identity", identityInfo);
@@ -67,7 +71,7 @@ public class JWTController {
         // Create new jwt
         jwt = jwtAuthor.createJWT(identityInfo.get(2), jwtClaims);
 
-        LOG.info("Setting acf: " + jwt);
+        LOG.info("Setting acf: " + acf);
 
         String jwtJSON = "{\"token\": \""+ jwt +"\"}";
 
