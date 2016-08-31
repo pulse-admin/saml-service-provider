@@ -3,6 +3,7 @@ server.port=8080
 
 #saml entity
 entityId=urn:test:ainq:state:name
+entityBaseUrl=http://localhost:8080
 
 #return url
 portalUrl=http://localhost:3000

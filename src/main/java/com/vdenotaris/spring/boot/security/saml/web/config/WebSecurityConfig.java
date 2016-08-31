@@ -327,6 +327,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         } else {
             metadataGenerator.setEntityId("entityId");
         }
+        if (env.containsProperty("entityBaseUrl")) {
+            metadataGenerator.setEntityBaseURL(env.getProperty("entityBaseUrl"));
+        } else {
+            metadataGenerator.setEntityBaseURL("entityBaseUrl");
+        }
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
         metadataGenerator.setKeyManager(keyManager());
