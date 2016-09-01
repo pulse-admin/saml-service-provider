@@ -550,6 +550,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/").permitAll()
             .antMatchers("/error").permitAll()
             .antMatchers("/saml/**").permitAll()
+            .antMatchers("/jwt/**").permitAll()
             .anyRequest().authenticated();
         http
             .logout()
