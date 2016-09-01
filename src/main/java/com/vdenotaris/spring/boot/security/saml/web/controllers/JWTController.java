@@ -39,8 +39,30 @@ public class JWTController {
     @RequestMapping(value="/jwt", method= RequestMethod.GET,
                     produces="application/json; charset=utf-8")
 	public String getJwt() {
-        JWTAuthenticatedUser user = (JWTAuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        LOG.info("Retrieving token: " + user.getJwt());
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        JWTAuthenticatedUser user;
+        if (principal.toString().equals("anonymousUser")) {
+            user = new JWTAuthenticatedUser();
+            user.setFirstName("Fake");
+            user.setLastName("Person");
+            user.setEmail("fake@sample.com");
+            List<String> authorityInfo = new ArrayList<String>();
+            List<String> identityInfo = new ArrayList<String>();
+            authorityInfo.add("ROLE_USER");
+            identityInfo.add(user.getFirstName());
+            identityInfo.add(user.getLastName());
+            identityInfo.add(user.getEmail());
+
+            Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
+            jwtClaims.put("Authorities", authorityInfo);
+            jwtClaims.put("Identity", identityInfo);
+            String jwt = jwtAuthor.createJWT(user.getEmail(), jwtClaims);
+            user.setJwt(jwt);
+            LOG.info("Fake user: " + user.toString());
+        } else {
+            user = (JWTAuthenticatedUser) principal;
+            LOG.info("Retrieving token: " + user.getJwt());
+        }
         if (user != null && user.getJwt() != null) {
             String jwtJSON = "{\"token\": \""+ user.getJwt() +"\"}";
             return jwtJSON;
