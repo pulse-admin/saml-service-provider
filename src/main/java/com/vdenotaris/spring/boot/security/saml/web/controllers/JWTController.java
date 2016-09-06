@@ -99,4 +99,25 @@ public class JWTController {
 
 		return jwtJSON;
     }
+
+    @RequestMapping(value="/jwt/keepalive", method=RequestMethod.GET,
+                    produces="application/json; charset=utf-8")
+    public String setAcf(@RequestHeader(value="Authorization") String authorization) {
+		String jwt = null;
+        String oldJwt = authorization.split(" ")[1];
+
+        // Parse old Jwt
+        Map<String, Object> claims = jwtConsumer.consume(oldJwt);
+        List<String> authorityInfo = (List<String>) claims.get("Authorities");
+        List<String> identityInfo = (List<String>) claims.get("Identity");
+        Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
+        jwtClaims.put("Authorities", authorityInfo);
+        jwtClaims.put("Identity", identityInfo);
+
+        // Create new jwt
+        jwt = jwtAuthor.createJWT(identityInfo.get(2), jwtClaims);
+
+        String jwtJSON = "{\"token\": \""+ jwt +"\"}";
+		return jwtJSON;
+    }
 }
