@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.protocol.Protocol;
@@ -105,6 +107,9 @@ import com.vdenotaris.spring.boot.security.saml.web.core.SAMLUserDetailsServiceI
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	// Logger
+	private static final Logger LOG = LoggerFactory.getLogger(SAMLUserDetailsServiceImpl.class);
 
 	@Autowired Environment env;
 
@@ -306,6 +311,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		return extendedMetadataDelegate;
 	}
 
+    @Bean
+	@Qualifier("idp-dhv")
+	public ExtendedMetadataDelegate dhvExtendedMetadataProvider()
+        throws MetadataProviderException {
+
+		String metadataURL = env.getProperty("portalUrl") + "/assets/saml/california_black_metadata.xml";
+		Timer backgroundTaskTimer = new Timer(true);
+		HTTPMetadataProvider httpMetadataProvider = new HTTPMetadataProvider(backgroundTaskTimer, httpClient(), metadataURL);
+		httpMetadataProvider.setParserPool(parserPool());
+		ExtendedMetadataDelegate extendedMetadataDelegate =
+            new ExtendedMetadataDelegate(httpMetadataProvider, extendedMetadata());
+		extendedMetadataDelegate.setMetadataTrustCheck(true);
+		extendedMetadataDelegate.setMetadataRequireSignature(false);
+		return extendedMetadataDelegate;
+	}
+
     // IDP Metadata configuration - paths to metadata of IDPs in circle of trust
     // is here
     // Do no forget to call iniitalize method on providers
@@ -315,6 +336,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         List<MetadataProvider> providers = new ArrayList<MetadataProvider>();
         providers.add(ssoCircleExtendedMetadataProvider());
         providers.add(testShibExtendedMetadataProvider());
+        providers.add(dhvExtendedMetadataProvider());
         return new CachingMetadataManager(providers);
     }
 
