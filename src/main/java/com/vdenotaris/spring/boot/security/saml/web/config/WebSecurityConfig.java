@@ -316,7 +316,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public ExtendedMetadataDelegate dhvExtendedMetadataProvider()
         throws MetadataProviderException {
 
-		String metadataURL = env.getProperty("portalUrl") + "/assets/saml/california_black_metadata.xml";
+		String metadataURL = env.getProperty("portalUrl") + "/assets/saml/california_demo_metadata.xml";
 		Timer backgroundTaskTimer = new Timer(true);
 		HTTPMetadataProvider httpMetadataProvider = new HTTPMetadataProvider(backgroundTaskTimer, httpClient(), metadataURL);
 		httpMetadataProvider.setParserPool(parserPool());
