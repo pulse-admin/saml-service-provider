@@ -7,6 +7,7 @@ entityBaseUrl=http://localhost:8080
 
 #return url
 portalUrl=http://localhost:3000
+samlMetadata=https://somewhere.com/metadata.xml
 
 #jwt parameters
 keyLocation=C:\\JSONPulseRsaJoseJWebKey.txt
