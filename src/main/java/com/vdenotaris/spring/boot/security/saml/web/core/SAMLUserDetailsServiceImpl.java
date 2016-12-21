@@ -76,7 +76,6 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
             jwtClaims.get("Identity").add("LastName");
             jwtClaims.get("Identity").add("EmailAddress");
         }
-
         String jwt = jwtAuthor.createJWT(userID, jwtClaims);
         LOG.info("JWT is " + jwt);
 

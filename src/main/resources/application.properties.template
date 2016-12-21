@@ -5,8 +5,13 @@ server.port=8080
 entityId=urn:test:ainq:state:name
 entityBaseUrl=http://localhost:8080
 
+#keystore information
+keystoreUsername=username
+keystorePassword=password
+
 #return url
 portalUrl=http://localhost:3000
+samlMetadata=https://somewhere.com/metadata.xml
 
 #jwt parameters
 keyLocation=C:\\JSONPulseRsaJoseJWebKey.txt
