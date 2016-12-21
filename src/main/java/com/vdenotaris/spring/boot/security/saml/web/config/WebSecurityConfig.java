@@ -213,18 +213,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         DefaultResourceLoader loader = new DefaultResourceLoader();
         Resource storeFile = loader
             .getResource("classpath:/saml/samlKeystore.jks");
-        String storePass = "nalle123";
+        String storePassword = env.getProperty("keystorePassword");
+        String storeUsername = env.getProperty("keystoreUsername");
         Map<String, String> passwords = new HashMap<String, String>();
-        passwords.put("apollo", "nalle123");
-        String defaultKey = "apollo";
-        return new JKSKeyManager(storeFile, storePass, passwords, defaultKey);
+        passwords.put(storeUsername, storePassword);
+        return new JKSKeyManager(storeFile, storePassword, passwords, storeUsername);
     }
 
     // Setup TLS Socket Factory
     @Bean
     public TLSProtocolConfigurer tlsProtocolConfigurer() {
         TLSProtocolConfigurer tlsProtocolConfigurer = new TLSProtocolConfigurer();
-        //        tlsProtocolConfigurer.setSslHostnameVerification("allowAll");
+        tlsProtocolConfigurer.setSslHostnameVerification("allowAll");
         return tlsProtocolConfigurer;
     }
 
