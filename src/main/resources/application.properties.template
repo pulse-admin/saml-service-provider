@@ -22,6 +22,6 @@ jwtExpirationTimeMinutesInTheFuture=30
 jwtNotBeforeMinutesInThePast=4
 
 server.ssl.key-store: src/main/resources/keystore.p12
-server.ssl.key-store-password: PuLsE1!$
+server.ssl.key-store-password: <insert password>
 server.ssl.keyStoreType: PKCS12
 server.ssl.keyAlias: tomcat
