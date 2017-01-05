@@ -3,7 +3,7 @@ server.port=8080
 
 #saml entity
 entityId=urn:test:ainq:state:name
-entityBaseUrl=http://localhost:8080
+entityBaseUrl=https://localhost:8080
 
 #keystore information
 keystoreUsername=username
@@ -20,3 +20,8 @@ jwtIssuer=CALEMSA
 jwtAudience=CALEMSA
 jwtExpirationTimeMinutesInTheFuture=30
 jwtNotBeforeMinutesInThePast=4
+
+server.ssl.key-store: src/main/resources/keystore.p12
+server.ssl.key-store-password: PuLsE1!$
+server.ssl.keyStoreType: PKCS12
+server.ssl.keyAlias: tomcat
