@@ -88,9 +88,14 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		// returns such a date in a form of application specific UserDetails object.
 		//return new User(userID, "<abc123>", true, true, true, true, authorities);
         JWTAuthenticatedUser user = new JWTAuthenticatedUser(userID);
-        user.setFirstName(credential.getAttributeAsString("FirstName"));
-        user.setLastName(credential.getAttributeAsString("LastName"));
-        user.setEmail(credential.getAttributeAsString("Email"));
+
+        user.setuser_id(credential.getAttributeAsString("user_id"));
+        user.setusername(credential.getAttributeAsString("username"));
+        user.setauth_source(credential.getAttributeAsString("auth_source"));
+        user.setfull_name(credential.getAttributeAsString("full_name"));
+        user.setorganization(credential.getAttributeAsString("organization"));
+        user.setpurpose_for_use(credential.getAttributeAsString("purpose_for_use"));
+        user.setrole(credential.getAttributeAsString("role"));
         user.addPermission("ROLE_USER");
         user.setJwt(jwt);
         return user;

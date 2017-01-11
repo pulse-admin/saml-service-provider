@@ -4,6 +4,12 @@ server.port=8080
 #saml entity
 entityId=urn:test:ainq:state:name
 entityBaseUrl=http://localhost:8080
+scheme=http
+serverName=www.myserver.com
+serverPort=443
+includeServerPortInRequestURL=false
+contextPath=/spring-security-saml2-sample
+timingSkew=600
 
 #keystore information
 keystoreUsername=username
@@ -20,3 +26,8 @@ jwtIssuer=CALEMSA
 jwtAudience=CALEMSA
 jwtExpirationTimeMinutesInTheFuture=30
 jwtNotBeforeMinutesInThePast=4
+
+server.ssl.key-store: src/main/resources/keystore.p12
+server.ssl.key-store-password: <insert password>
+server.ssl.keyStoreType: PKCS12
+server.ssl.keyAlias: tomcat
