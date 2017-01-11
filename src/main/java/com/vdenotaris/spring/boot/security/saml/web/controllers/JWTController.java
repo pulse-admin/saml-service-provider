@@ -54,7 +54,7 @@ public class JWTController {
             List<String> identityInfo = new ArrayList<String>();
             authorityInfo.add("ROLE_USER");
             identityInfo.add(user.getuser_id());
-            identityInfo.add(user.getusername());
+            identityInfo.add(user.getUsername());
             identityInfo.add(user.getauth_source());
             identityInfo.add(user.getfull_name());
             identityInfo.add(user.getorganization());
@@ -64,7 +64,7 @@ public class JWTController {
             Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
             jwtClaims.put("Authorities", authorityInfo);
             jwtClaims.put("Identity", identityInfo);
-            String jwt = jwtAuthor.createJWT(user.getusername(), jwtClaims);
+            String jwt = jwtAuthor.createJWT(user.getUsername(), jwtClaims);
             user.setJwt(jwt);
             LOG.info("Fake user: " + user.toString());
         } else {
