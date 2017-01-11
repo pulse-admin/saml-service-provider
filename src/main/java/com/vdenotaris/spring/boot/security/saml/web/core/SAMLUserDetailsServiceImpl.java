@@ -63,18 +63,22 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
         jwtClaims.put("Authorities", new ArrayList<String>());
         jwtClaims.get("Authorities").add("ROLE_USER");
         jwtClaims.put("Identity", new ArrayList<String>());
-        if (credential.getAttribute("FirstName") != null) {
-            jwtClaims.get("Identity").add(credential.getAttributeAsString("FirstName"));
-            jwtClaims.get("Identity").add(credential.getAttributeAsString("LastName"));
-            jwtClaims.get("Identity").add(credential.getAttributeAsString("EmailAddress"));
-        } else if (credential.getAttribute("urn:oid:2.5.4.42") != null) {
-            jwtClaims.get("Identity").add(credential.getAttributeAsString("urn:oid:2.5.4.42"));
-            jwtClaims.get("Identity").add(credential.getAttributeAsString("urn:oid:2.5.4.4"));
-            jwtClaims.get("Identity").add(credential.getAttributeAsString("urn:oid:1.3.6.1.4.1.5923.1.1.1.6"));
+        if (credential.getAttributeAsString("auth_source") == "DHV") {
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("uid"));
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("username"));
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("auth_source"));
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("full_name"));
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("organization"));
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("purpose_for_use"));
+            jwtClaims.get("Identity").add(credential.getAttributeAsString("role"));
         } else {
-            jwtClaims.get("Identity").add("FirstName");
-            jwtClaims.get("Identity").add("LastName");
-            jwtClaims.get("Identity").add("EmailAddress");
+            jwtClaims.get("Identity").add("user_id");
+            jwtClaims.get("Identity").add("username");
+            jwtClaims.get("Identity").add("auth_source");
+            jwtClaims.get("Identity").add("full_name");
+            jwtClaims.get("Identity").add("organization");
+            jwtClaims.get("Identity").add("purpose_for_use");
+            jwtClaims.get("Identity").add("role");
         }
         String jwt = jwtAuthor.createJWT(userID, jwtClaims);
         LOG.info("JWT is " + jwt);
