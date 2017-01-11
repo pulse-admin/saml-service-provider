@@ -43,20 +43,28 @@ public class JWTController {
         JWTAuthenticatedUser user;
         if (principal.toString().equals("anonymousUser")) {
             user = new JWTAuthenticatedUser();
-            user.setFirstName("Fake");
-            user.setLastName("Person");
-            user.setEmail("fake@sample.com");
+            user.setuser_id("user_id");
+            user.setusername("username");
+            user.setauth_source("auth_source");
+            user.setfull_name("full_name");
+            user.setorganization("organization");
+            user.setpurpose_for_use("purpose_for_use");
+            user.setrole("role");
             List<String> authorityInfo = new ArrayList<String>();
             List<String> identityInfo = new ArrayList<String>();
             authorityInfo.add("ROLE_USER");
-            identityInfo.add(user.getFirstName());
-            identityInfo.add(user.getLastName());
-            identityInfo.add(user.getEmail());
+            identityInfo.add(user.getuser_id());
+            identityInfo.add(user.getusername());
+            identityInfo.add(user.getauth_source());
+            identityInfo.add(user.getfull_name());
+            identityInfo.add(user.getorganization());
+            identityInfo.add(user.getpurpose_for_use());
+            identityInfo.add(user.getrole());
 
             Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
             jwtClaims.put("Authorities", authorityInfo);
             jwtClaims.put("Identity", identityInfo);
-            String jwt = jwtAuthor.createJWT(user.getEmail(), jwtClaims);
+            String jwt = jwtAuthor.createJWT(user.getusername(), jwtClaims);
             user.setJwt(jwt);
             LOG.info("Fake user: " + user.toString());
         } else {

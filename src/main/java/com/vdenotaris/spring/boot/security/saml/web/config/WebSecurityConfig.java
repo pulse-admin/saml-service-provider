@@ -58,6 +58,7 @@ import org.springframework.security.saml.SAMLLogoutProcessingFilter;
 import org.springframework.security.saml.SAMLProcessingFilter;
 import org.springframework.security.saml.SAMLWebSSOHoKProcessingFilter;
 import org.springframework.security.saml.context.SAMLContextProviderImpl;
+import org.springframework.security.saml.context.SAMLContextProviderLB;
 import org.springframework.security.saml.key.JKSKeyManager;
 import org.springframework.security.saml.key.KeyManager;
 import org.springframework.security.saml.log.SAMLDefaultLogger;
@@ -155,9 +156,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     // Provider of default SAML Context
-    @Bean
+    /*    @Bean
     public SAMLContextProviderImpl contextProvider() {
         return new SAMLContextProviderImpl();
+        }*/
+
+    // Provider of SAML Context handling routing
+    @Bean
+    public SAMLContextProviderLB contextProvider() {
+        SAMLContextProviderLB contextProvider = new SAMLContextProviderLB();
+        contextProvider.setContextPath(env.getProperty("contextPath"));
+        contextProvider.setScheme(env.getProperty("scheme"));
+        contextProvider.setServerName(env.getProperty("serverName"));
+        contextProvider.setServerPort(Integer.parseInt(env.getProperty("serverPort")));
+        contextProvider.setIncludeServerPortInRequestURL(env.getProperty("includeServerPortInRequestURL", Boolean.class));
+        return contextProvider;
     }
 
     // Initialization of OpenSAML library
@@ -169,13 +182,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // Logger for SAML messages and events
     @Bean
     public SAMLDefaultLogger samlLogger() {
-        return new SAMLDefaultLogger();
+        SAMLDefaultLogger logger = new SAMLDefaultLogger();
+        logger.setLogErrors(true);
+        logger.setLogMessages(true);
+        return logger;
     }
 
     // SAML 2.0 WebSSO Assertion Consumer
     @Bean
     public WebSSOProfileConsumer webSSOprofileConsumer() {
-        return new WebSSOProfileConsumerImpl();
+        WebSSOProfileConsumerImpl profileConsumer = new WebSSOProfileConsumerImpl();
+        profileConsumer.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
+        return profileConsumer;
     }
 
     // SAML 2.0 Holder-of-Key WebSSO Assertion Consumer
@@ -204,7 +222,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public SingleLogoutProfile logoutprofile() {
-        return new SingleLogoutProfileImpl();
+        SingleLogoutProfileImpl profileLogout = new SingleLogoutProfileImpl();
+        profileLogout.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
+        return profileLogout;
     }
 
     // Central storage of cryptographic keys
@@ -315,7 +335,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Qualifier("idp-dhv")
 	public ExtendedMetadataDelegate dhvExtendedMetadataProvider()
         throws MetadataProviderException {
-
 		String metadataURL = env.getProperty("samlMetadata");
 		Timer backgroundTaskTimer = new Timer(true);
 		HTTPMetadataProvider httpMetadataProvider = new HTTPMetadataProvider(backgroundTaskTimer, httpClient(), metadataURL);
