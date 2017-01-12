@@ -35,6 +35,8 @@ public class JWTController {
 
     //Logger
 	private static final Logger LOG = LoggerFactory.getLogger(JWTController.class);
+    private static final int JWT_INDEX = 7;
+    private static final int JWT_ID = 1;
 
     @RequestMapping(value="/jwt", method= RequestMethod.GET,
                     produces="application/json; charset=utf-8")
@@ -54,7 +56,7 @@ public class JWTController {
             List<String> identityInfo = new ArrayList<String>();
             authorityInfo.add("ROLE_USER");
             identityInfo.add(user.getuser_id());
-            identityInfo.add(user.getUsername());
+            identityInfo.add(user.getUsername()); // JWT_ID location
             identityInfo.add(user.getauth_source());
             identityInfo.add(user.getfull_name());
             identityInfo.add(user.getorganization());
@@ -89,17 +91,17 @@ public class JWTController {
         Map<String, Object> claims = jwtConsumer.consume(oldJwt);
         List<String> authorityInfo = (List<String>) claims.get("Authorities");
         List<String> identityInfo = (List<String>) claims.get("Identity");
-        if (identityInfo.size() <= 3) {
+        if (identityInfo.size() <= JWT_INDEX) {
             identityInfo.add(acf);
         } else {
-            identityInfo.set(3,acf);
+            identityInfo.set(JWT_INDEX,acf);
         }
         Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
         jwtClaims.put("Authorities", authorityInfo);
         jwtClaims.put("Identity", identityInfo);
 
         // Create new jwt
-        jwt = jwtAuthor.createJWT(identityInfo.get(2), jwtClaims);
+        jwt = jwtAuthor.createJWT(identityInfo.get(JWT_ID), jwtClaims);
 
         LOG.info("Setting acf: " + acf);
 
@@ -123,7 +125,7 @@ public class JWTController {
         jwtClaims.put("Identity", identityInfo);
 
         // Create new jwt
-        jwt = jwtAuthor.createJWT(identityInfo.get(2), jwtClaims);
+        jwt = jwtAuthor.createJWT(identityInfo.get(JWT_ID), jwtClaims);
 
         String jwtJSON = "{\"token\": \""+ jwt +"\"}";
 		return jwtJSON;
