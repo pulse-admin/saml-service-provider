@@ -46,6 +46,7 @@ public class JWTController {
         if (principal.toString().equals("anonymousUser")) {
             user = new JWTAuthenticatedUser();
             user.setuser_id("user_id");
+            user.setSubjectName("username");
             user.setusername("username");
             user.setauth_source("auth_source");
             user.setfull_name("full_name");
@@ -66,7 +67,7 @@ public class JWTController {
             Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
             jwtClaims.put("Authorities", authorityInfo);
             jwtClaims.put("Identity", identityInfo);
-            String jwt = jwtAuthor.createJWT(user.getUsername(), jwtClaims);
+            String jwt = jwtAuthor.createJWT(user.getSubjectName(), jwtClaims);
             user.setJwt(jwt);
             LOG.info("Fake user: " + user.toString());
         } else {
