@@ -81,15 +81,15 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
             jwtClaims.get("Identity").add("role");
         }
         String jwt = jwtAuthor.createJWT(userID, jwtClaims);
-        LOG.info("JWT is " + jwt);
 
 		// In a real scenario, this implementation has to locate user in a arbitrary
 		// dataStore based on information present in the SAMLCredential and
 		// returns such a date in a form of application specific UserDetails object.
 		//return new User(userID, "<abc123>", true, true, true, true, authorities);
-        JWTAuthenticatedUser user = new JWTAuthenticatedUser(userID);
+        JWTAuthenticatedUser user = new JWTAuthenticatedUser();
 
-        user.setuser_id(credential.getAttributeAsString("user_id"));
+        user.setSubjectName(credential.getAttributeAsString("username"));
+        user.setuser_id(credential.getAttributeAsString("uid"));
         user.setusername(credential.getAttributeAsString("username"));
         user.setauth_source(credential.getAttributeAsString("auth_source"));
         user.setfull_name(credential.getAttributeAsString("full_name"));
@@ -98,6 +98,8 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
         user.setrole(credential.getAttributeAsString("role"));
         user.addPermission("ROLE_USER");
         user.setJwt(jwt);
+
+        LOG.info("User is " + user.toString());
         return user;
 	}
 
