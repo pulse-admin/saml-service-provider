@@ -72,7 +72,7 @@ public class JWTController {
             LOG.info("Fake user: " + user.toString());
         } else {
             user = (JWTAuthenticatedUser) principal;
-            LOG.info("Retrieving token: " + user.getJwt());
+            LOG.info(user.toString() + " [Retrieving token: " + user.getJwt() + "]");
         }
         if (user != null && user.getJwt() != null) {
             String jwtJSON = "{\"token\": \""+ user.getJwt() +"\"}";

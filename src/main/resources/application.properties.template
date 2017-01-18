@@ -10,6 +10,7 @@ serverPort=443
 includeServerPortInRequestURL=false
 contextPath=/spring-security-saml2-sample
 timingSkew=600
+allowBypass=true
 
 #keystore information
 keystoreUsername=username

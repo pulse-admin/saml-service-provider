@@ -577,6 +577,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        boolean allowBypass = env.getProperty("allowBypass", Boolean.class);
         http
             .httpBasic()
             .authenticationEntryPoint(samlEntryPoint());
@@ -586,13 +587,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .addFilterBefore(metadataGeneratorFilter(), ChannelProcessingFilter.class)
             .addFilterAfter(samlFilter(), BasicAuthenticationFilter.class);
-        http
-            .authorizeRequests()
-            .antMatchers("/").permitAll()
-            .antMatchers("/error").permitAll()
-            .antMatchers("/saml/**").permitAll()
-            .antMatchers("/jwt/**").permitAll()
-            .anyRequest().authenticated();
+        if (allowBypass) {
+            http
+                .authorizeRequests()
+                .antMatchers("/").permitAll()
+                .antMatchers("/error").permitAll()
+                .antMatchers("/saml/**").permitAll()
+                .antMatchers("/jwt/**").permitAll()
+                .anyRequest().authenticated();
+        } else {
+            http
+                .authorizeRequests()
+                .antMatchers("/").permitAll()
+                .antMatchers("/error").permitAll()
+                .antMatchers("/saml/**").permitAll()
+                .anyRequest().authenticated();
+        }
         http
             .logout()
             .logoutSuccessUrl("/");
