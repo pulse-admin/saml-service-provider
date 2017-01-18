@@ -63,7 +63,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
         jwtClaims.put("Authorities", new ArrayList<String>());
         jwtClaims.get("Authorities").add("ROLE_USER");
         jwtClaims.put("Identity", new ArrayList<String>());
-        if (credential.getAttributeAsString("auth_source") == "DHV") {
+        if (credential.getAttribute("auth_source") != null && credential.getAttributeAsString("auth_source").equals("DHV")) {
             jwtClaims.get("Identity").add(credential.getAttributeAsString("uid"));
             jwtClaims.get("Identity").add(credential.getAttributeAsString("username"));
             jwtClaims.get("Identity").add(credential.getAttributeAsString("auth_source"));
@@ -81,14 +81,8 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
             jwtClaims.get("Identity").add("role");
         }
         String jwt = jwtAuthor.createJWT(userID, jwtClaims);
+        JWTAuthenticatedUser user = new JWTAuthenticatedUser(userID);
 
-		// In a real scenario, this implementation has to locate user in a arbitrary
-		// dataStore based on information present in the SAMLCredential and
-		// returns such a date in a form of application specific UserDetails object.
-		//return new User(userID, "<abc123>", true, true, true, true, authorities);
-        JWTAuthenticatedUser user = new JWTAuthenticatedUser();
-
-        user.setSubjectName(credential.getAttributeAsString("username"));
         user.setuser_id(credential.getAttributeAsString("uid"));
         user.setusername(credential.getAttributeAsString("username"));
         user.setauth_source(credential.getAttributeAsString("auth_source"));
@@ -102,5 +96,4 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
         LOG.info("User is " + user.toString());
         return user;
 	}
-
 }
