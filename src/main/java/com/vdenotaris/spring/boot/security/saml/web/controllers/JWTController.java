@@ -111,9 +111,9 @@ public class JWTController {
 		return jwtJSON;
     }
 
-    @RequestMapping(value="/jwt/keepalive", method=RequestMethod.GET,
-                    produces="application/json; charset=utf-8")
-    public String setAcf(@RequestHeader(value="Authorization") String authorization) {
+    @RequestMapping(value="/jwt/keepalive", method=RequestMethod.POST,
+    		produces="application/json; charset=utf-8")
+    public String keepAlive(@RequestHeader(value="Authorization") String authorization, @RequestBody String acf) {
 		String jwt = null;
         String oldJwt = authorization.split(" ")[1];
 
@@ -121,6 +121,12 @@ public class JWTController {
         Map<String, Object> claims = jwtConsumer.consume(oldJwt);
         List<String> authorityInfo = (List<String>) claims.get("Authorities");
         List<String> identityInfo = (List<String>) claims.get("Identity");
+        if (identityInfo.size() <= JWT_INDEX) {
+            identityInfo.add(acf);
+        } else {
+        	identityInfo.remove(JWT_INDEX);
+        	identityInfo.add(JWT_INDEX, acf);
+        }
         Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
         jwtClaims.put("Authorities", authorityInfo);
         jwtClaims.put("Identity", identityInfo);

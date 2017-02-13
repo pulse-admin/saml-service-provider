@@ -67,6 +67,31 @@ I would like to say thank you to *Alexey Syrtsev* ([github.com/airleks](https://
 | Lines Covered | 196 |
 | Total Lines | 199 |
 
+### Setting up https on local machine
+1. Make sure the following lines are in the application.properties of SSP, Broker, Mock, and Service
+server.ssl.key-store: src/main/resources/keystore.p12
+server.ssl.key-store-password: pulse123
+server.ssl.keyStoreType: PKCS12
+server.ssl.keyAlias: tomcat
+
+2. Make sure all urls in application.properties files have prepend https and not http
+
+3. Open gitbash as Administrator and cd into saml-service-provider src/main/resources/
+
+4. Generate self-signed certificate 
+	a. Excute command: keytool -genkey -alias tomcat -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 365
+	b. Enter password 'pulse123'
+	c. The first question will be: "What is your first and last name?" Enter: localhost
+	d. Answer the next few questions, answers dont matter
+
+5. Import self-signed certificate into the jvm's trust store
+	a. Execute the command: keytool -exportcert -keystore keystore.p12 -storepass pulse123 -storetype PKCS12 -alias tomcat -file server.cer
+	b. Execute the command: keytool -importcert -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -alias tomcat -file server.cer
+	c. Type yes when it asks if you want to trust this certificate
+
+6. Copy the keystore.p12 file from the current directory to the src/main/resources/ directory of Mock, Broker, and Service
+7. Re-run SSP, Broker, Mock and Service
+
 ### License
 
     Copyright 2016 Audacious Inquiry, LLC
