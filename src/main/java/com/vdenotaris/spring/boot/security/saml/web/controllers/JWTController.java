@@ -35,12 +35,45 @@ public class JWTController {
 
     //Logger
 	private static final Logger LOG = LoggerFactory.getLogger(JWTController.class);
+    private static final int JWT_INDEX = 7;
+    private static final int JWT_ID = 1;
 
     @RequestMapping(value="/jwt", method= RequestMethod.GET,
                     produces="application/json; charset=utf-8")
 	public String getJwt() {
-        JWTAuthenticatedUser user = (JWTAuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        LOG.info("Retrieving token: " + user.getJwt());
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        JWTAuthenticatedUser user;
+        if (principal.toString().equals("anonymousUser")) {
+            user = new JWTAuthenticatedUser();
+            user.setuser_id("user_id");
+            user.setSubjectName("username");
+            user.setusername("username");
+            user.setauth_source("auth_source");
+            user.setfull_name("full_name");
+            user.setorganization("organization");
+            user.setpurpose_for_use("purpose_for_use");
+            user.setrole("role");
+            List<String> authorityInfo = new ArrayList<String>();
+            List<String> identityInfo = new ArrayList<String>();
+            authorityInfo.add("ROLE_USER");
+            identityInfo.add(user.getuser_id());
+            identityInfo.add(user.getUsername()); // JWT_ID location
+            identityInfo.add(user.getauth_source());
+            identityInfo.add(user.getfull_name());
+            identityInfo.add(user.getorganization());
+            identityInfo.add(user.getpurpose_for_use());
+            identityInfo.add(user.getrole());
+
+            Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
+            jwtClaims.put("Authorities", authorityInfo);
+            jwtClaims.put("Identity", identityInfo);
+            String jwt = jwtAuthor.createJWT(user.getSubjectName(), jwtClaims);
+            user.setJwt(jwt);
+            LOG.info("Fake user: " + user.toString());
+        } else {
+            user = (JWTAuthenticatedUser) principal;
+            LOG.info(user.toString() + " [Retrieving token: " + user.getJwt() + "]");
+        }
         if (user != null && user.getJwt() != null) {
             String jwtJSON = "{\"token\": \""+ user.getJwt() +"\"}";
             return jwtJSON;
@@ -59,18 +92,49 @@ public class JWTController {
         Map<String, Object> claims = jwtConsumer.consume(oldJwt);
         List<String> authorityInfo = (List<String>) claims.get("Authorities");
         List<String> identityInfo = (List<String>) claims.get("Identity");
-        identityInfo.add(acf);
+        if (identityInfo.size() <= JWT_INDEX) {
+            identityInfo.add(acf);
+        } else {
+            identityInfo.set(JWT_INDEX,acf);
+        }
         Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
         jwtClaims.put("Authorities", authorityInfo);
         jwtClaims.put("Identity", identityInfo);
 
         // Create new jwt
-        jwt = jwtAuthor.createJWT(identityInfo.get(2), jwtClaims);
+        jwt = jwtAuthor.createJWT(identityInfo.get(JWT_ID), jwtClaims);
 
-        LOG.info("Setting acf: " + jwt);
+        LOG.info("Setting acf: " + acf);
 
         String jwtJSON = "{\"token\": \""+ jwt +"\"}";
 
+		return jwtJSON;
+    }
+
+    @RequestMapping(value="/jwt/keepalive", method=RequestMethod.POST,
+    		produces="application/json; charset=utf-8")
+    public String keepAlive(@RequestHeader(value="Authorization") String authorization, @RequestBody String acf) {
+		String jwt = null;
+        String oldJwt = authorization.split(" ")[1];
+
+        // Parse old Jwt
+        Map<String, Object> claims = jwtConsumer.consume(oldJwt);
+        List<String> authorityInfo = (List<String>) claims.get("Authorities");
+        List<String> identityInfo = (List<String>) claims.get("Identity");
+        if (identityInfo.size() <= JWT_INDEX) {
+            identityInfo.add(acf);
+        } else {
+        	identityInfo.remove(JWT_INDEX);
+        	identityInfo.add(JWT_INDEX, acf);
+        }
+        Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
+        jwtClaims.put("Authorities", authorityInfo);
+        jwtClaims.put("Identity", identityInfo);
+
+        // Create new jwt
+        jwt = jwtAuthor.createJWT(identityInfo.get(JWT_ID), jwtClaims);
+
+        String jwtJSON = "{\"token\": \""+ jwt +"\"}";
 		return jwtJSON;
     }
 }

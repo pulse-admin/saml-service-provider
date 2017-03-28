@@ -1,8 +1,34 @@
+#for embedded gradle tomcat
+server.port=8080
+
+#saml entity
+entityId=urn:test:ainq:state:name
+entityBaseUrl=http://localhost:8080
+scheme=http
+serverName=www.myserver.com
+serverPort=443
+includeServerPortInRequestURL=false
+contextPath=/spring-security-saml2-sample
+timingSkew=600
+allowBypass=true
+
+#keystore information
+keystoreUsername=username
+keystorePassword=password
+
+#return url
 portalUrl=http://localhost:3000
-entityId=entity
-keyLocation=C:\\JSONPulseRsaJoseJWebKeyTest.txt
+samlMetadata=https://somewhere.com/metadata.xml
+
+#jwt parameters
+keyLocation=C:\\JSONPulseRsaJoseJWebKey.txt
 jwtAllowedClockSkew=30
 jwtIssuer=CALEMSA
 jwtAudience=CALEMSA
 jwtExpirationTimeMinutesInTheFuture=30
 jwtNotBeforeMinutesInThePast=4
+
+server.ssl.key-store: src/main/resources/keystore.p12
+server.ssl.key-store-password: <insert password>
+server.ssl.keyStoreType: PKCS12
+server.ssl.keyAlias: tomcat

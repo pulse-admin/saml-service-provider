@@ -6,7 +6,28 @@
 
 This project expands upon the sample Spring Boot SAML project made by Vincenzo De Notaris with customizations required for deployment in a PULSE environment.
 
----------
+## Configuration
+
+```sh
+$ git clone https://github.com/pulse-admin/saml-service-provider.git
+$ cd saml-service-provider
+$ cp src/main/resources/application.properties.template src/main/resources/application.properties
+$ # change entityId & keyLocation to appropriate values
+$ nano src/main/resources/application.properties
+$ cp src/test/resources/environment.test.properties.template src/test/resources/environment.test.properties
+$ # change keyLocation to appropriate value
+$ nano src/test/resources/environment.test.properties
+```
+
+## Build & run
+
+``./gradlew bootRun`` will compile, build, and run the application, by default on http://localhost:8080
+
+## Dependencies
+
+This project depends on the [PULSE Authentication Module](https://github.com/pulse-admin/api/tree/development/pulse/auth) for JWT authoring & consuming. That project must be compiled and installed before this project will compile.
+
+====================
 
 ## References
 
@@ -45,6 +66,31 @@ I would like to say thank you to *Alexey Syrtsev* ([github.com/airleks](https://
 | Coverage % | 99% |
 | Lines Covered | 196 |
 | Total Lines | 199 |
+
+### Setting up https on local machine
+1. Make sure the following lines are in the application.properties of SSP, Broker, Mock, and Service
+server.ssl.key-store: src/main/resources/keystore.p12
+server.ssl.key-store-password: pulse123
+server.ssl.keyStoreType: PKCS12
+server.ssl.keyAlias: tomcat
+
+2. Make sure all urls in application.properties files have prepend https and not http
+
+3. Open gitbash as Administrator and cd into saml-service-provider src/main/resources/
+
+4. Generate self-signed certificate 
+	a. Excute command: keytool -genkey -alias tomcat -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 365
+	b. Enter password 'pulse123'
+	c. The first question will be: "What is your first and last name?" Enter: localhost
+	d. Answer the next few questions, answers dont matter
+
+5. Import self-signed certificate into the jvm's trust store
+	a. Execute the command: keytool -exportcert -keystore keystore.p12 -storepass pulse123 -storetype PKCS12 -alias tomcat -file server.cer
+	b. Execute the command: keytool -importcert -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -alias tomcat -file server.cer
+	c. Type yes when it asks if you want to trust this certificate
+
+6. Copy the keystore.p12 file from the current directory to the src/main/resources/ directory of Mock, Broker, and Service
+7. Re-run SSP, Broker, Mock and Service
 
 ### License
 
