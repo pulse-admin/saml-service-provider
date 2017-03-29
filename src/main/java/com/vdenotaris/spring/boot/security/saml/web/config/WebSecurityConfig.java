@@ -437,8 +437,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public SimpleUrlLogoutSuccessHandler successLogoutHandler() {
         SimpleUrlLogoutSuccessHandler successLogoutHandler = new SimpleUrlLogoutSuccessHandler();
-        if (env.containsProperty("portalUrl")) {
-            successLogoutHandler.setDefaultTargetUrl(env.getProperty("portalUrl"));
+        if (env.containsProperty("logoutUrl")) {
+            successLogoutHandler.setDefaultTargetUrl(env.getProperty("logoutUrl"));
         } else {
             successLogoutHandler.setDefaultTargetUrl("/landing");
         }

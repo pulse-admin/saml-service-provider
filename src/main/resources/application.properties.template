@@ -18,6 +18,7 @@ keystorePassword=password
 
 #return url
 portalUrl=http://localhost:3000
+logoutUrl=https://www.google.com
 samlMetadata=https://somewhere.com/metadata.xml
 
 #jwt parameters
