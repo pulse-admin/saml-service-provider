@@ -16,10 +16,17 @@
 
 package com.vdenotaris.spring.boot.security.saml.web.core;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,11 +37,14 @@ import org.springframework.security.saml.SAMLCredential;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.Attribute;
+import org.opensaml.saml2.core.impl.AssertionMarshaller;
 import org.opensaml.ws.message.encoder.MessageEncodingException;
+import org.opensaml.xml.io.MarshallingException;
 import org.opensaml.xml.util.XMLHelper;
 import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
 import org.springframework.security.saml.util.SAMLUtil;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Element;
 
 import gov.ca.emsa.pulse.auth.permission.GrantedPermission;
 import gov.ca.emsa.pulse.auth.user.JWTAuthenticatedUser;
@@ -63,6 +73,21 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
             LOG.info(att.getName() + ": " + credential.getAttributeAsString(att.getName()));
 	    }
 	    Assertion assertion = credential.getAuthenticationAssertion();
+	    AssertionMarshaller am = new AssertionMarshaller();
+	    Element assertionElement = null;
+		try {
+			assertionElement = am.marshall(assertion);
+		} catch (MarshallingException e) {
+			e.printStackTrace();
+		}
+		
+		StringWriter sr = new StringWriter();
+		try {
+			TransformerFactory.newInstance().newTransformer().transform(new DOMSource(assertionElement), new StreamResult(sr));
+		} catch (TransformerException | TransformerFactoryConfigurationError e) {
+			e.printStackTrace();
+		}
+		String assertionString = sr.getBuffer().toString();
         Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
         jwtClaims.put("Authorities", new ArrayList<String>());
         jwtClaims.get("Authorities").add("ROLE_USER");
@@ -75,6 +100,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
             jwtClaims.get("Identity").add(credential.getAttributeAsString("organization"));
             jwtClaims.get("Identity").add(credential.getAttributeAsString("purpose_for_use"));
             jwtClaims.get("Identity").add(credential.getAttributeAsString("role"));
+            jwtClaims.get("Identity").add(assertionString);
         } else {
             jwtClaims.get("Identity").add("user_id");
             jwtClaims.get("Identity").add("username");
@@ -94,7 +120,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
         user.setorganization(credential.getAttributeAsString("organization"));
         user.setpurpose_for_use(credential.getAttributeAsString("purpose_for_use"));
         user.setrole(credential.getAttributeAsString("role"));
-        user.setAssertion(assertion);
+        user.setAssertion(assertionString);
         user.addPermission("ROLE_USER");
         user.setJwt(jwt);
 
