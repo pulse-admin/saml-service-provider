@@ -16,6 +16,7 @@
 
 package com.vdenotaris.spring.boot.security.saml.web.core;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,16 +36,22 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.saml.SAMLCredential;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.Attribute;
 import org.opensaml.saml2.core.impl.AssertionMarshaller;
 import org.opensaml.ws.message.encoder.MessageEncodingException;
+import org.opensaml.xml.ConfigurationException;
 import org.opensaml.xml.io.MarshallingException;
 import org.opensaml.xml.util.XMLHelper;
 import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
 import org.springframework.security.saml.util.SAMLUtil;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 
 import gov.ca.emsa.pulse.auth.permission.GrantedPermission;
 import gov.ca.emsa.pulse.auth.user.JWTAuthenticatedUser;
@@ -58,6 +65,12 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 
     @Autowired
     JWTAuthorRsaJoseJImpl jwtAuthor;
+    @Autowired private ResourceLoader resourceLoader;
+    
+    public String getAssertion() throws IOException, ConfigurationException{
+		Resource pdFile = resourceLoader.getResource("classpath:assertion.xml");
+		return Resources.toString(pdFile.getURL(), Charsets.UTF_8);
+	}
 
 	public Object loadUserBySAML(SAMLCredential credential)
 			throws UsernameNotFoundException {
@@ -109,6 +122,20 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
             jwtClaims.get("Identity").add("organization");
             jwtClaims.get("Identity").add("purpose_for_use");
             jwtClaims.get("Identity").add("role");
+            try {
+				jwtClaims.get("Identity").add(getAssertion());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			} catch (ConfigurationException e1) {
+				e1.printStackTrace();
+			}
+            try {
+				jwtClaims.get("Identity").add(getAssertion());
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ConfigurationException e) {
+				e.printStackTrace();
+			}
         }
         String jwt = jwtAuthor.createJWT(userID, jwtClaims);
         JWTAuthenticatedUser user = new JWTAuthenticatedUser(userID);
