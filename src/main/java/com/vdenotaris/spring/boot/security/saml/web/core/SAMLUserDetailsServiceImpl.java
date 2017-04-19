@@ -28,8 +28,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.saml.SAMLCredential;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.Attribute;
+import org.opensaml.ws.message.encoder.MessageEncodingException;
+import org.opensaml.xml.util.XMLHelper;
 import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
+import org.springframework.security.saml.util.SAMLUtil;
 import org.springframework.stereotype.Service;
 
 import gov.ca.emsa.pulse.auth.permission.GrantedPermission;
@@ -58,7 +62,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 	    {
             LOG.info(att.getName() + ": " + credential.getAttributeAsString(att.getName()));
 	    }
-
+	    Assertion assertion = credential.getAuthenticationAssertion();
         Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
         jwtClaims.put("Authorities", new ArrayList<String>());
         jwtClaims.get("Authorities").add("ROLE_USER");
@@ -82,7 +86,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
         }
         String jwt = jwtAuthor.createJWT(userID, jwtClaims);
         JWTAuthenticatedUser user = new JWTAuthenticatedUser(userID);
-
+        
         user.setuser_id(credential.getAttributeAsString("uid"));
         user.setusername(credential.getAttributeAsString("username"));
         user.setauth_source(credential.getAttributeAsString("auth_source"));
@@ -90,6 +94,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
         user.setorganization(credential.getAttributeAsString("organization"));
         user.setpurpose_for_use(credential.getAttributeAsString("purpose_for_use"));
         user.setrole(credential.getAttributeAsString("role"));
+        user.setAssertion(assertion);
         user.addPermission("ROLE_USER");
         user.setJwt(jwt);
 
