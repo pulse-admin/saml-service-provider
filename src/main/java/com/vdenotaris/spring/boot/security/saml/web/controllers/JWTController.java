@@ -1,5 +1,6 @@
 package com.vdenotaris.spring.boot.security.saml.web.controllers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -7,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.xml.security.utils.Base64;
+import org.opensaml.xml.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -14,11 +17,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 
 import gov.ca.emsa.pulse.auth.user.JWTAuthenticatedUser;
 import gov.ca.emsa.pulse.auth.jwt.JWTAuthor;
@@ -32,11 +40,18 @@ public class JWTController {
 
     @Autowired
 	private JWTConsumer jwtConsumer;
-
+    
+    @Autowired private ResourceLoader resourceLoader;
+    
     //Logger
 	private static final Logger LOG = LoggerFactory.getLogger(JWTController.class);
     private static final int JWT_INDEX = 7;
     private static final int JWT_ID = 1;
+    
+    public String getAssertion() throws IOException, ConfigurationException{
+		Resource pdFile = resourceLoader.getResource("classpath:assertion.xml");
+		return Resources.toString(pdFile.getURL(), Charsets.UTF_8);
+	}
 
     @RequestMapping(value="/jwt", method= RequestMethod.GET,
                     produces="application/json; charset=utf-8")

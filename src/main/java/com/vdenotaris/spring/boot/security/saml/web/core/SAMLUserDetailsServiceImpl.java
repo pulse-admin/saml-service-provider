@@ -113,7 +113,6 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
             jwtClaims.get("Identity").add(credential.getAttributeAsString("organization"));
             jwtClaims.get("Identity").add(credential.getAttributeAsString("purpose_for_use"));
             jwtClaims.get("Identity").add(credential.getAttributeAsString("role"));
-            jwtClaims.get("Identity").add(assertionString);
         } else {
             jwtClaims.get("Identity").add("user_id");
             jwtClaims.get("Identity").add("username");
@@ -122,24 +121,10 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
             jwtClaims.get("Identity").add("organization");
             jwtClaims.get("Identity").add("purpose_for_use");
             jwtClaims.get("Identity").add("role");
-            try {
-				jwtClaims.get("Identity").add(getAssertion());
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			} catch (ConfigurationException e1) {
-				e1.printStackTrace();
-			}
-            try {
-				jwtClaims.get("Identity").add(getAssertion());
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (ConfigurationException e) {
-				e.printStackTrace();
-			}
         }
         String jwt = jwtAuthor.createJWT(userID, jwtClaims);
         JWTAuthenticatedUser user = new JWTAuthenticatedUser(userID);
-        
+
         user.setuser_id(credential.getAttributeAsString("uid"));
         user.setusername(credential.getAttributeAsString("username"));
         user.setauth_source(credential.getAttributeAsString("auth_source"));
@@ -147,7 +132,6 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
         user.setorganization(credential.getAttributeAsString("organization"));
         user.setpurpose_for_use(credential.getAttributeAsString("purpose_for_use"));
         user.setrole(credential.getAttributeAsString("role"));
-        user.setAssertion(assertionString);
         user.addPermission("ROLE_USER");
         user.setJwt(jwt);
 
