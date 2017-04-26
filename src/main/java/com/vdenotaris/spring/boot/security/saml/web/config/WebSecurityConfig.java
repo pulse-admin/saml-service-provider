@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;

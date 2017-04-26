@@ -25,10 +25,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.vdenotaris.spring.boot.security.saml.web.core.Util;
 
 import gov.ca.emsa.pulse.auth.user.JWTAuthenticatedUser;
+import gov.ca.emsa.pulse.auth.user.UserRetrievalException;
 import gov.ca.emsa.pulse.auth.jwt.JWTAuthor;
 import gov.ca.emsa.pulse.auth.jwt.JWTConsumer;
 
@@ -41,11 +44,13 @@ public class JWTController {
     @Autowired
 	private JWTConsumer jwtConsumer;
     
+    private Util util = new Util();
+    
     @Autowired private ResourceLoader resourceLoader;
     
     //Logger
 	private static final Logger LOG = LoggerFactory.getLogger(JWTController.class);
-    private static final int JWT_INDEX = 7;
+    private static final int JWT_INDEX = 8;
     private static final int JWT_ID = 1;
     
     public String getAssertion() throws IOException, ConfigurationException{
@@ -55,10 +60,11 @@ public class JWTController {
 
     @RequestMapping(value="/jwt", method= RequestMethod.GET,
                     produces="application/json; charset=utf-8")
-	public String getJwt() {
+	public String getJwt() throws IOException, ConfigurationException {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         JWTAuthenticatedUser user;
         if (principal.toString().equals("anonymousUser")) {
+        	
             user = new JWTAuthenticatedUser();
             user.setuser_id("user_id");
             user.setSubjectName("username");
@@ -67,6 +73,7 @@ public class JWTController {
             user.setfull_name("full_name");
             user.setorganization("organization");
             user.setpurpose_for_use("purpose_for_use");
+            
             user.setrole("role");
             List<String> authorityInfo = new ArrayList<String>();
             List<String> identityInfo = new ArrayList<String>();
@@ -84,6 +91,18 @@ public class JWTController {
             jwtClaims.put("Identity", identityInfo);
             String jwt = jwtAuthor.createJWT(user.getSubjectName(), jwtClaims);
             user.setJwt(jwt);
+            String pulseUserId = null;
+            String jwtToReturn = null;
+        	try {
+				pulseUserId = util.createPulseUserWithAssertion(user, getAssertion());
+				user.setPulseUserId(pulseUserId);
+				identityInfo.add(user.getPulseUserId());
+				jwtClaims.put("Identity", identityInfo);
+				jwtToReturn = jwtAuthor.createJWT(user.getSubjectName(), jwtClaims);
+				user.setJwt(jwtToReturn);
+			} catch (JsonProcessingException | UserRetrievalException e) {
+				e.printStackTrace();
+			}
             LOG.info("Fake user: " + user.toString());
         } else {
             user = (JWTAuthenticatedUser) principal;
