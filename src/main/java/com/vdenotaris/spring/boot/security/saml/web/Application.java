@@ -18,7 +18,9 @@ package com.vdenotaris.spring.boot.security.saml.web;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.PropertySource;
 
+@PropertySource("classpath:/application.properties")
 @SpringBootApplication(scanBasePackages= {"gov.ca.emsa.pulse.auth.**",
                                           "com.vdenotaris.spring.boot.security.saml.web.**"})
 public class Application {
