@@ -77,7 +77,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 	JWTAuthorRsaJoseJImpl jwtAuthor;
 	@Autowired private ResourceLoader resourceLoader;
 	
-	private Util util = new Util();
+	Util util = new Util();
 
 	public String getAssertionFromFile() throws IOException, ConfigurationException{
 		Resource pdFile = resourceLoader.getResource("classpath:assertion.xml");
@@ -167,7 +167,15 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		}
 		String jwtWithPulseUserId = jwtAuthor.createJWT(userID, jwtClaims);
 		JWTAuthenticatedUser userWithPulseUserId = new JWTAuthenticatedUser(userID);
+		userWithPulseUserId.setuser_id(credential.getAttributeAsString("uid"));
+		userWithPulseUserId.setusername(credential.getAttributeAsString("username"));
+		userWithPulseUserId.setauth_source(credential.getAttributeAsString("auth_source"));
+		userWithPulseUserId.setfull_name(credential.getAttributeAsString("full_name"));
+		userWithPulseUserId.setorganization(credential.getAttributeAsString("organization"));
+		userWithPulseUserId.setpurpose_for_use(credential.getAttributeAsString("purpose_for_use"));
+		userWithPulseUserId.setrole(credential.getAttributeAsString("role"));
 		userWithPulseUserId.setPulseUserId(pulseUserId);
+		userWithPulseUserId.addPermission("ROLE_USER");
 		userWithPulseUserId.setJwt(jwtWithPulseUserId);
 
 		LOG.info("User is " + user.toString());
