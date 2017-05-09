@@ -28,6 +28,10 @@ jwtAudience=CALEMSA
 jwtExpirationTimeMinutesInTheFuture=30
 jwtNotBeforeMinutesInThePast=4
 
+#common property
+pulseOID=PULSE_ID_HERE
+
+#ssl properties
 server.ssl.key-store: src/main/resources/keystore.p12
 server.ssl.key-store-password: <insert password>
 server.ssl.keyStoreType: PKCS12
