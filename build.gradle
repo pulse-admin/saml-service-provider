@@ -67,6 +67,7 @@ dependencies {
   compile group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.5.1'
   compile group: 'org.springframework.security.extensions', name: 'spring-security-saml2-core', version:'1.0.1.RELEASE'
   compile 'gov.ca.emsa.pulse:auth:0.0.1-SNAPSHOT'
+  compile 'gov.ca.emsa.pulse:common:0.0.1-SNAPSHOT'
 }
 
 task wrapper(type: Wrapper) {
