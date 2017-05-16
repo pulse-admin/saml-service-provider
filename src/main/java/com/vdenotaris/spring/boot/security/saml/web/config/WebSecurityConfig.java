@@ -30,6 +30,7 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.velocity.app.VelocityEngine;
+import org.opensaml.common.xml.SAMLConstants;
 import org.opensaml.saml2.metadata.provider.HTTPMetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProviderException;
@@ -193,6 +194,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public WebSSOProfileConsumer webSSOprofileConsumer() {
         WebSSOProfileConsumerImpl profileConsumer = new WebSSOProfileConsumerImpl();
+        profileConsumer.setReleaseDOM(false);
         profileConsumer.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
         return profileConsumer;
     }
