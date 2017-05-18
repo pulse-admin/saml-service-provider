@@ -202,7 +202,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // SAML 2.0 Holder-of-Key WebSSO Assertion Consumer
     @Bean
     public WebSSOProfileConsumerHoKImpl hokWebSSOprofileConsumer() {
-        return new WebSSOProfileConsumerHoKImpl();
+    	return new WebSSOProfileConsumerHoKImpl();
     }
 
     // SAML 2.0 Web SSO profile
@@ -376,6 +376,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         } else {
             metadataGenerator.setEntityBaseURL("entityBaseUrl");
         }
+        Collection<String> HoKSSOs = new ArrayList<String>();
+        HoKSSOs.add("artifact");
+        HoKSSOs.add("post");
+        metadataGenerator.setBindingsHoKSSO(HoKSSOs);
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
         metadataGenerator.setKeyManager(keyManager());
