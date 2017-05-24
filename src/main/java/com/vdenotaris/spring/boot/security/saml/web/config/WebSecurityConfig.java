@@ -456,7 +456,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		httpMetadataProvider.setParserPool(parserPool());
 		ExtendedMetadataDelegate extendedMetadataDelegate =
             new ExtendedMetadataDelegate(httpMetadataProvider, extendedMetadata());
-		System.out.println(extendedMetadataDelegate.getMetadata());
 		extendedMetadataDelegate.setMetadataTrustCheck(true);
 		extendedMetadataDelegate.setMetadataRequireSignature(false);
 		return extendedMetadataDelegate;
@@ -496,7 +495,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         metadataGenerator.setBindingsHoKSSO(HoKSSOs);
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
-        //metadataGenerator.setKeyManager(keyManager());
+        metadataGenerator.setKeyManager(keyManager());
         return metadataGenerator;
     }
 
