@@ -303,6 +303,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     	}
     	
     	};
+    	consumer.setReleaseDOM(false);
+        consumer.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
     	
     	return consumer;
     }
