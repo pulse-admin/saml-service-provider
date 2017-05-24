@@ -16,12 +16,18 @@
 
 package com.vdenotaris.spring.boot.security.saml.web.config;
 
+import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
+
+import javax.net.ssl.X509ExtendedKeyManager;
+
+
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,15 +36,23 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.velocity.app.VelocityEngine;
+import org.opensaml.xml.XMLObject;
+import org.opensaml.xml.util.Base64;
+import org.opensaml.common.SAMLException;
 import org.opensaml.common.xml.SAMLConstants;
+import org.opensaml.saml2.core.*;
 import org.opensaml.saml2.metadata.provider.HTTPMetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProviderException;
+import org.opensaml.xml.encryption.DecryptionException;
 import org.opensaml.xml.parse.ParserPool;
 import org.opensaml.xml.parse.StaticBasicParserPool;
+import org.opensaml.xml.security.x509.X509Credential;
+import org.opensaml.xml.signature.KeyInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -61,6 +75,7 @@ import org.springframework.security.saml.SAMLProcessingFilter;
 import org.springframework.security.saml.SAMLWebSSOHoKProcessingFilter;
 import org.springframework.security.saml.context.SAMLContextProviderImpl;
 import org.springframework.security.saml.context.SAMLContextProviderLB;
+import org.springframework.security.saml.context.SAMLMessageContext;
 import org.springframework.security.saml.key.JKSKeyManager;
 import org.springframework.security.saml.key.KeyManager;
 import org.springframework.security.saml.log.SAMLDefaultLogger;
@@ -80,6 +95,7 @@ import org.springframework.security.saml.processor.SAMLBinding;
 import org.springframework.security.saml.processor.SAMLProcessorImpl;
 import org.springframework.security.saml.trust.httpclient.TLSProtocolConfigurer;
 import org.springframework.security.saml.trust.httpclient.TLSProtocolSocketFactory;
+import org.springframework.security.saml.util.SAMLUtil;
 import org.springframework.security.saml.util.VelocityFactory;
 import org.springframework.security.saml.websso.ArtifactResolutionProfile;
 import org.springframework.security.saml.websso.ArtifactResolutionProfileImpl;
@@ -104,6 +120,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.util.Assert;
 
 import com.vdenotaris.spring.boot.security.saml.web.core.SAMLUserDetailsServiceImpl;
 
@@ -203,7 +220,91 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // SAML 2.0 Holder-of-Key WebSSO Assertion Consumer
     @Bean
     public WebSSOProfileConsumerHoKImpl hokWebSSOprofileConsumer() {
-    	return new WebSSOProfileConsumerHoKImpl();
+    	WebSSOProfileConsumerHoKImpl consumer = new WebSSOProfileConsumerHoKImpl(){
+    		
+    	@Override
+    	protected void verifySubject(Subject subject, AuthnRequest request, SAMLMessageContext context) throws SAMLException, DecryptionException {
+
+            String userAgentCertificate = getUserAgentBase64Certificate(context);
+
+            for (SubjectConfirmation confirmation : subject.getSubjectConfirmations()) {
+
+                if (SubjectConfirmation.METHOD_HOLDER_OF_KEY.equals(confirmation.getMethod())) {
+
+                    System.out.println("Processing Holder-of-Key subject confirmation");
+                    SubjectConfirmationData data = confirmation.getSubjectConfirmationData();
+
+                    // HoK must have confirmation 554
+                    if (data == null) {
+                    	
+                        System.out.println("HoK SubjectConfirmation invalidated by missing confirmation data");
+                        continue;
+                    }
+
+                    // Validate not before
+                    if (data.getNotBefore() != null && data.getNotBefore().isAfterNow()) {
+                        System.out.println("HoK SubjectConfirmation invalidated by notBefore field");
+                        continue;
+                    }
+
+                    // Validate not on or after
+                    if (data.getNotBefore() != null && data.getNotOnOrAfter().isBeforeNow()) {
+                        System.out.println("HoK SubjectConfirmation invalidated by expired notOnOrAfter");
+                        continue;
+                    }
+
+                    // Validate in response to if present
+                    if (request != null) {
+                        if (data.getInResponseTo() != null) {
+                            if (!data.getInResponseTo().equals(request.getID())) {
+                                System.out.println("HoK SubjectConfirmation invalidated by invalid in response to field");
+                                continue;
+                            }
+                        }
+                    }
+
+                    // Validate recipient if present
+                    if (data.getRecipient() != null) {
+                        try {
+                            verifyEndpoint(context.getLocalEntityEndpoint(), data.getRecipient());
+                        } catch (SAMLException e) {
+                            System.out.println("HoK SubjectConfirmation invalidated by recipient assertion consumer URL, found {}");
+                            continue;
+                        }
+                    }
+
+                    // Was the subject confirmed by this confirmation data? If so let's store the subject in context.
+                    NameID nameID;
+                    if (subject.getEncryptedID() != null) {
+                        Assert.notNull(context.getLocalDecrypter(), "Can't decrypt NameID, no decrypter is set in the context");
+                        nameID = (NameID) context.getLocalDecrypter().decrypt(subject.getEncryptedID());
+                    } else {
+                        nameID = subject.getNameID();
+                    }
+                    context.setSubjectNameIdentifier(nameID);
+                    return;
+
+                }
+
+            }
+
+            throw new SAMLException("Assertion invalidated by subject confirmation - can't be confirmed by holder-of-key method");
+
+        }
+    	@Override
+    	protected String getUserAgentBase64Certificate(SAMLMessageContext context){
+    		String x509 = null;
+			try {
+				x509 = Base64.encodeBytes(keyManager().getCertificate("pulse").getEncoded());
+			} catch (CertificateEncodingException e) {
+				e.printStackTrace();
+			}
+    		return x509;
+    	}
+    	
+    	};
+    	
+    	return consumer;
     }
 
     // SAML 2.0 Web SSO profile
@@ -262,12 +363,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public ProtocolSocketFactory socketFactory() {
-        return new TLSProtocolSocketFactory(keyManager(), null, "default");
+        return new TLSProtocolSocketFactory(keyManager(), null, "allowAll");
     }
 
     @Bean
     public Protocol socketFactoryProtocol() {
-        return new Protocol("https", socketFactory(), 443);
+        return new Protocol("SSL", socketFactory(), 443);
     }
 
     @Bean
@@ -301,7 +402,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public ExtendedMetadata extendedMetadata() {
     	ExtendedMetadata extendedMetadata = new ExtendedMetadata();
-    	extendedMetadata.setTlsKey(env.getProperty("keystoreUsername"));
+    	//extendedMetadata.setTlsKey(env.getProperty("keystoreUsername"));
     	extendedMetadata.setIdpDiscoveryEnabled(true);
     	extendedMetadata.setSignMetadata(false);
     	return extendedMetadata;
@@ -355,6 +456,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		httpMetadataProvider.setParserPool(parserPool());
 		ExtendedMetadataDelegate extendedMetadataDelegate =
             new ExtendedMetadataDelegate(httpMetadataProvider, extendedMetadata());
+		System.out.println(extendedMetadataDelegate.getMetadata());
 		extendedMetadataDelegate.setMetadataTrustCheck(true);
 		extendedMetadataDelegate.setMetadataRequireSignature(false);
 		return extendedMetadataDelegate;
@@ -370,6 +472,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         //providers.add(ssoCircleExtendedMetadataProvider());
         //providers.add(testShibExtendedMetadataProvider());
         providers.add(dhvExtendedMetadataProvider());
+        System.out.println(dhvExtendedMetadataProvider().getMetadata());
         return new CachingMetadataManager(providers);
     }
 
@@ -394,7 +497,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         metadataGenerator.setBindingsHoKSSO(HoKSSOs);
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
-        metadataGenerator.setKeyManager(keyManager());
+        //metadataGenerator.setKeyManager(keyManager());
         return metadataGenerator;
     }
 
