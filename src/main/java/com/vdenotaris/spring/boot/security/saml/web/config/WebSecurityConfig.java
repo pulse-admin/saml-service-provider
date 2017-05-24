@@ -472,7 +472,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         //providers.add(ssoCircleExtendedMetadataProvider());
         //providers.add(testShibExtendedMetadataProvider());
         providers.add(dhvExtendedMetadataProvider());
-        System.out.println(dhvExtendedMetadataProvider().getMetadata());
         return new CachingMetadataManager(providers);
     }
 
