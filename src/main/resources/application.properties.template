@@ -15,6 +15,7 @@ allowBypass=true
 #keystore information
 keystoreUsername=username
 keystorePassword=password
+keystorePath=classpath:/saml/samlKeystore.jks
 
 pulseOID=PULSE_ID_HERE
 
