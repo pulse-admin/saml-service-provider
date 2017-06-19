@@ -295,7 +295,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     	protected String getUserAgentBase64Certificate(SAMLMessageContext context){
     		String x509 = null;
 			try {
-				x509 = Base64.encodeBytes(keyManager().getCertificate("pulse").getEncoded());
+				x509 = Base64.encodeBytes(keyManager().getCertificate(env.getProperty("hokCertificate")).getEncoded());
 			} catch (CertificateEncodingException e) {
 				e.printStackTrace();
 			}

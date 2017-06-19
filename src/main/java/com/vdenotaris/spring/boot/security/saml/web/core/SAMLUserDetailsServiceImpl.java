@@ -97,12 +97,22 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		{
 			LOG.info(att.getName() + ": " + credential.getAttributeAsString(att.getName()));
 		}
-		String assertionString = null;
+		Assertion assertion = credential.getAuthenticationAssertion();
+		AssertionMarshaller am = new AssertionMarshaller();
+		Element assertionElement = null;
 		try {
-			assertionString = XMLHelper.nodeToString(SAMLUtil.marshallMessage(credential.getAuthenticationAssertion()));
-		} catch (MessageEncodingException e1) {
-			LOG.info(e1.getMessage());
+			assertionElement = am.marshall(assertion);
+		} catch (MarshallingException e) {
+			e.printStackTrace();
 		}
+
+		StringWriter sr = new StringWriter();
+		try {
+			TransformerFactory.newInstance().newTransformer().transform(new DOMSource(assertionElement), new StreamResult(sr));
+		} catch (TransformerException | TransformerFactoryConfigurationError e) {
+			e.printStackTrace();
+		}
+		String assertionString = sr.getBuffer().toString();
 		
 		Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
 		jwtClaims.put("Authorities", new ArrayList<String>());
