@@ -212,7 +212,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public WebSSOProfileConsumer webSSOprofileConsumer() {
         WebSSOProfileConsumerImpl profileConsumer = new WebSSOProfileConsumerImpl();
-        profileConsumer.setReleaseDOM(false);
+        profileConsumer.setReleaseDOM(true);
         profileConsumer.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
         return profileConsumer;
     }
@@ -324,7 +324,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public WebSSOProfileConsumerHoKImpl hokWebSSOProfile() {
     	 WebSSOProfileConsumerHoKImpl profileConsumer = new WebSSOProfileConsumerHoKImpl();
-    	 profileConsumer.setReleaseDOM(false);
+    	 profileConsumer.setReleaseDOM(true);
     	 profileConsumer.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
     	 return profileConsumer;
     }

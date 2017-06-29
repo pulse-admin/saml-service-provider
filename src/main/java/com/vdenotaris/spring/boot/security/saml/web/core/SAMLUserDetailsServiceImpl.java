@@ -18,6 +18,7 @@ package com.vdenotaris.spring.boot.security.saml.web.core;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,16 +39,31 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.saml.SAMLCredential;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpEntity;
+import org.apache.xml.security.c14n.Canonicalizer;
+import org.apache.xml.security.signature.XMLSignature;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.Attribute;
 import org.opensaml.saml2.core.impl.AssertionMarshaller;
 import org.opensaml.ws.message.encoder.MessageEncodingException;
+import org.opensaml.xml.Configuration;
 import org.opensaml.xml.ConfigurationException;
+import org.opensaml.xml.XMLObjectBuilderFactory;
 import org.opensaml.xml.io.MarshallingException;
+import org.opensaml.xml.security.SecurityException;
+import org.opensaml.xml.security.SecurityHelper;
+import org.opensaml.xml.security.credential.Credential;
+import org.opensaml.xml.security.x509.X509KeyInfoGeneratorFactory;
+import org.opensaml.xml.signature.KeyInfo;
+import org.opensaml.xml.signature.Signature;
+import org.opensaml.xml.signature.impl.SignatureBuilder;
 import org.opensaml.xml.util.XMLHelper;
+import org.springframework.security.saml.key.KeyManager;
 import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
 import org.springframework.security.saml.util.SAMLUtil;
 import org.springframework.stereotype.Service;
@@ -60,6 +76,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.vdenotaris.spring.boot.security.saml.web.config.WebSecurityConfig;
 
 import gov.ca.emsa.pulse.auth.permission.GrantedPermission;
 import gov.ca.emsa.pulse.auth.user.JWTAuthenticatedUser;
@@ -76,14 +93,45 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 	@Autowired
 	JWTAuthorRsaJoseJImpl jwtAuthor;
 	@Autowired private ResourceLoader resourceLoader;
-	
+
 	Util util = new Util();
+	
+	ApplicationContext ctx = new AnnotationConfigApplicationContext(WebSecurityConfig.class);
 
 	public String getAssertionFromFile() throws IOException, ConfigurationException{
 		Resource pdFile = resourceLoader.getResource("classpath:assertion.xml");
 		return Resources.toString(pdFile.getURL(), Charsets.UTF_8);
 	}
 	
+	public Signature createSignature(){
+		String alias = "apollo";
+		KeyManager keyManager = ctx.getBean(KeyManager.class);
+		Credential signingCredential = keyManager.getCredential(alias);
+		XMLObjectBuilderFactory builderFactory = Configuration.getBuilderFactory();
+		SignatureBuilder signatureBuilder = (SignatureBuilder) builderFactory
+				.getBuilder(Signature.DEFAULT_ELEMENT_NAME);
+		Signature assertionSignature = signatureBuilder.buildObject();
+
+		assertionSignature.setSigningCredential(signingCredential);
+		assertionSignature
+		.setCanonicalizationAlgorithm(Canonicalizer.ALGO_ID_C14N_EXCL_WITH_COMMENTS);
+		assertionSignature
+		.setSignatureAlgorithm(XMLSignature.ALGO_ID_SIGNATURE_RSA);
+
+		X509KeyInfoGeneratorFactory kiFactory = new X509KeyInfoGeneratorFactory();
+		kiFactory.setEmitEntityCertificate(true);
+
+		KeyInfo keyInfo = null;
+		try {
+			keyInfo = kiFactory.newInstance().generate(signingCredential);
+		} catch (SecurityException e) {
+			LOG.error(e.getMessage());
+		}
+
+		assertionSignature.setKeyInfo(keyInfo);
+		return assertionSignature;
+	}
+
 	public Object loadUserBySAML(SAMLCredential credential)
 			throws UsernameNotFoundException {
 
@@ -99,11 +147,16 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		}
 		String assertionString = null;
 		try {
+			credential.getAuthenticationAssertion().getSubject().getSubjectConfirmations().get(0).setMethod("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key");
+	        Signature assertionSignature = createSignature();
+			
+			credential.getAuthenticationAssertion().setSignature(assertionSignature);
 			assertionString = XMLHelper.nodeToString(SAMLUtil.marshallMessage(credential.getAuthenticationAssertion()));
+			System.out.println("Assertion String:" + assertionString);
 		} catch (MessageEncodingException e1) {
 			LOG.info(e1.getMessage());
 		}
-		
+
 		Map<String, List<String>> jwtClaims = new HashMap<String, List<String>>();
 		jwtClaims.put("Authorities", new ArrayList<String>());
 		jwtClaims.get("Authorities").add("ROLE_USER");
@@ -137,7 +190,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		user.setrole(credential.getAttributeAsString("role"));
 		user.addPermission("ROLE_USER");
 		user.setJwt(jwt);
-		
+
 		String pulseUserId = null;
 		if (credential.getAttribute("auth_source") != null && credential.getAttributeAsString("auth_source").equals("DHV")) {
 			try {

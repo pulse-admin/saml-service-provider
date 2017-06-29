@@ -21,6 +21,7 @@ import com.google.common.io.Resources;
 import com.vdenotaris.spring.boot.security.saml.web.CommonTestSupport;
 import com.vdenotaris.spring.boot.security.saml.web.TestConfig;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -40,6 +41,7 @@ import org.opensaml.xml.io.UnmarshallerFactory;
 import org.opensaml.xml.io.UnmarshallingException;
 import org.opensaml.xml.parse.BasicParserPool;
 import org.opensaml.xml.parse.XMLParserException;
+import org.opensaml.xml.signature.Signature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
@@ -143,5 +145,11 @@ public class SAMLUserDetailsServiceImplTest extends CommonTestSupport {
 
         assertTrue(authority instanceof GrantedPermission);
         assertEquals(USER_ROLE, ((GrantedPermission)authority).getAuthority());
+    }
+    
+    @Test
+    public void testCreateSignature(){
+    	Signature signature = userDetailsService.createSignature();
+    	Assert.assertNotNull(signature);
     }
 }
