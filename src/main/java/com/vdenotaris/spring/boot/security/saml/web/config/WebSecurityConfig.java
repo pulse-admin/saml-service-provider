@@ -136,6 +136,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private SAMLUserDetailsServiceImpl samlUserDetailsServiceImpl;
+    
+    @Autowired KeyManager keyManager;
 
     // Initialization of the velocity engine
     @Bean

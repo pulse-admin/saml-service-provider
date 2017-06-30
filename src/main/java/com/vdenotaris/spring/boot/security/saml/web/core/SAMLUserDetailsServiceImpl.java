@@ -61,6 +61,8 @@ import org.opensaml.xml.security.credential.Credential;
 import org.opensaml.xml.security.x509.X509KeyInfoGeneratorFactory;
 import org.opensaml.xml.signature.KeyInfo;
 import org.opensaml.xml.signature.Signature;
+import org.opensaml.xml.signature.SignatureException;
+import org.opensaml.xml.signature.Signer;
 import org.opensaml.xml.signature.impl.SignatureBuilder;
 import org.opensaml.xml.util.XMLHelper;
 import org.springframework.security.saml.key.KeyManager;
@@ -96,7 +98,9 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 
 	Util util = new Util();
 	
-	ApplicationContext ctx = new AnnotationConfigApplicationContext(WebSecurityConfig.class);
+	@Autowired Environment env;
+	
+	@Autowired private KeyManager keyManager;
 
 	public String getAssertionFromFile() throws IOException, ConfigurationException{
 		Resource pdFile = resourceLoader.getResource("classpath:assertion.xml");
@@ -104,19 +108,18 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 	}
 	
 	public Signature createSignature(){
-		String alias = "apollo";
-		KeyManager keyManager = ctx.getBean(KeyManager.class);
+		String alias = env.getProperty("keystoreUsername");
 		Credential signingCredential = keyManager.getCredential(alias);
 		XMLObjectBuilderFactory builderFactory = Configuration.getBuilderFactory();
 		SignatureBuilder signatureBuilder = (SignatureBuilder) builderFactory
 				.getBuilder(Signature.DEFAULT_ELEMENT_NAME);
-		Signature assertionSignature = signatureBuilder.buildObject();
+		Signature assertionSignature = signatureBuilder.buildObject(Signature.DEFAULT_ELEMENT_NAME);
 
 		assertionSignature.setSigningCredential(signingCredential);
 		assertionSignature
-		.setCanonicalizationAlgorithm(Canonicalizer.ALGO_ID_C14N_EXCL_WITH_COMMENTS);
+		.setCanonicalizationAlgorithm(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
 		assertionSignature
-		.setSignatureAlgorithm(XMLSignature.ALGO_ID_SIGNATURE_RSA);
+		.setSignatureAlgorithm(XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA1);
 
 		X509KeyInfoGeneratorFactory kiFactory = new X509KeyInfoGeneratorFactory();
 		kiFactory.setEmitEntityCertificate(true);
@@ -147,11 +150,21 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		}
 		String assertionString = null;
 		try {
-			credential.getAuthenticationAssertion().getSubject().getSubjectConfirmations().get(0).setMethod("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key");
-	        Signature assertionSignature = createSignature();
-			
-			credential.getAuthenticationAssertion().setSignature(assertionSignature);
-			assertionString = XMLHelper.nodeToString(SAMLUtil.marshallMessage(credential.getAuthenticationAssertion()));
+			Assertion assertion = credential.getAuthenticationAssertion();
+			assertion.getSubject().getSubjectConfirmations().get(0).setMethod("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key");
+			Signature sig = createSignature();
+			assertion.setSignature(sig);
+			try {
+				Configuration.getMarshallerFactory().getMarshaller(assertion).marshall(assertion);
+			} catch (MarshallingException e) {
+				e.printStackTrace();
+			}
+			try {
+				Signer.signObject(sig);
+			} catch (SignatureException e) {
+				e.printStackTrace();
+			}
+			assertionString = XMLHelper.nodeToString(SAMLUtil.marshallMessage(assertion));
 			System.out.println("Assertion String:" + assertionString);
 		} catch (MessageEncodingException e1) {
 			LOG.info(e1.getMessage());

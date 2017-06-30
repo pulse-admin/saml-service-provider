@@ -32,9 +32,13 @@ import org.opensaml.common.SAMLObjectBuilder;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.Issuer;
 import org.opensaml.saml2.core.NameID;
+import org.opensaml.saml2.core.Subject;
+import org.opensaml.saml2.core.SubjectConfirmation;
 import org.opensaml.saml2.core.impl.AssertionMarshaller;
+import org.opensaml.saml2.core.impl.SubjectBuilder;
 import org.opensaml.saml2.metadata.EntitiesDescriptor;
 import org.opensaml.xml.ConfigurationException;
+import org.opensaml.xml.XMLObjectBuilder;
 import org.opensaml.xml.XMLObjectBuilderFactory;
 import org.opensaml.xml.io.Unmarshaller;
 import org.opensaml.xml.io.UnmarshallerFactory;
@@ -92,10 +96,27 @@ public class SAMLUserDetailsServiceImplTest extends CommonTestSupport {
 		
 		
 		Assertion assertion = (Assertion) assertionBuilder.buildObject();
+		
 		SAMLObjectBuilder issuerBuilder = (SAMLObjectBuilder) builderFactory.getBuilder(Issuer.DEFAULT_ELEMENT_NAME);
         Issuer issuer = (Issuer) issuerBuilder.buildObject();
         issuer.setValue("https://california.demo.collaborativefusion.com/sso/saml2/idp/");
         assertion.setIssuer(issuer);
+        
+        SAMLObjectBuilder subjectBuilder = (SAMLObjectBuilder) builderFactory.getBuilder(Subject.DEFAULT_ELEMENT_NAME);
+        Subject subject = (Subject) subjectBuilder.buildObject();
+        
+        SAMLObjectBuilder subjectConfBuilder = (SAMLObjectBuilder) builderFactory.getBuilder(SubjectConfirmation.DEFAULT_ELEMENT_NAME);
+        SubjectConfirmation subjConfirmation = (SubjectConfirmation) subjectConfBuilder.buildObject();
+        subjConfirmation.setMethod("urn:oasis:names:tc:SAML:2.0:cm:bearer");
+        subject.getSubjectConfirmations().add(subjConfirmation);
+        
+        assertion.setSubject(subject);
+        
+        XMLObjectBuilder<Signature> signatureBuilder = Configuration.getBuilderFactory().getBuilder(Signature.DEFAULT_ELEMENT_NAME);
+        Signature signature = signatureBuilder.buildObject(Signature.DEFAULT_ELEMENT_NAME);
+        
+        assertion.setSignature(signature);
+        
         return assertion;
 	}
 	
