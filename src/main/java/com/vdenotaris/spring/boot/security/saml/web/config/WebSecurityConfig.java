@@ -136,6 +136,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private SAMLUserDetailsServiceImpl samlUserDetailsServiceImpl;
+    
+    @Autowired KeyManager keyManager;
 
     // Initialization of the velocity engine
     @Bean
@@ -212,7 +214,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public WebSSOProfileConsumer webSSOprofileConsumer() {
         WebSSOProfileConsumerImpl profileConsumer = new WebSSOProfileConsumerImpl();
-        profileConsumer.setReleaseDOM(false);
+        profileConsumer.setReleaseDOM(true);
         profileConsumer.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
         return profileConsumer;
     }
@@ -324,7 +326,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public WebSSOProfileConsumerHoKImpl hokWebSSOProfile() {
     	 WebSSOProfileConsumerHoKImpl profileConsumer = new WebSSOProfileConsumerHoKImpl();
-    	 profileConsumer.setReleaseDOM(false);
+    	 profileConsumer.setReleaseDOM(true);
     	 profileConsumer.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
     	 return profileConsumer;
     }
@@ -492,9 +494,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         }
         Collection<String> webSSO = new ArrayList<String>();
         metadataGenerator.setBindingsSSO(webSSO);
-        Collection<String> HoKSSOs = new ArrayList<String>();
-        HoKSSOs.add("post");
-        metadataGenerator.setBindingsHoKSSO(HoKSSOs);
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
         metadataGenerator.setKeyManager(keyManager());
