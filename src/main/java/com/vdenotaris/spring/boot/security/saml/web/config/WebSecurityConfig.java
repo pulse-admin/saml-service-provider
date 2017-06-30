@@ -494,9 +494,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         }
         Collection<String> webSSO = new ArrayList<String>();
         metadataGenerator.setBindingsSSO(webSSO);
-        Collection<String> HoKSSOs = new ArrayList<String>();
-        HoKSSOs.add("post");
-        metadataGenerator.setBindingsHoKSSO(HoKSSOs);
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
         metadataGenerator.setKeyManager(keyManager());
