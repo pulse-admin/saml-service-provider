@@ -136,6 +136,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private SAMLUserDetailsServiceImpl samlUserDetailsServiceImpl;
+    
+    @Autowired KeyManager keyManager;
 
     // Initialization of the velocity engine
     @Bean
@@ -212,7 +214,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public WebSSOProfileConsumer webSSOprofileConsumer() {
         WebSSOProfileConsumerImpl profileConsumer = new WebSSOProfileConsumerImpl();
-        profileConsumer.setReleaseDOM(false);
+        profileConsumer.setReleaseDOM(true);
         profileConsumer.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
         return profileConsumer;
     }
@@ -295,7 +297,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     	protected String getUserAgentBase64Certificate(SAMLMessageContext context){
     		String x509 = null;
 			try {
-				x509 = Base64.encodeBytes(keyManager().getCertificate("pulse").getEncoded());
+				x509 = Base64.encodeBytes(keyManager().getCertificate(env.getProperty("hokCertificate")).getEncoded());
 			} catch (CertificateEncodingException e) {
 				e.printStackTrace();
 			}
@@ -324,7 +326,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public WebSSOProfileConsumerHoKImpl hokWebSSOProfile() {
     	 WebSSOProfileConsumerHoKImpl profileConsumer = new WebSSOProfileConsumerHoKImpl();
-    	 profileConsumer.setReleaseDOM(false);
+    	 profileConsumer.setReleaseDOM(true);
     	 profileConsumer.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
     	 return profileConsumer;
     }
@@ -347,7 +349,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public KeyManager keyManager() {
         DefaultResourceLoader loader = new DefaultResourceLoader();
         Resource storeFile = loader
-            .getResource("classpath:/saml/samlKeystore.jks");
+            .getResource(env.getProperty("keystorePath"));
         String storePassword = env.getProperty("keystorePassword");
         String storeUsername = env.getProperty("keystoreUsername");
         Map<String, String> passwords = new HashMap<String, String>();
@@ -492,9 +494,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         }
         Collection<String> webSSO = new ArrayList<String>();
         metadataGenerator.setBindingsSSO(webSSO);
-        Collection<String> HoKSSOs = new ArrayList<String>();
-        HoKSSOs.add("post");
-        metadataGenerator.setBindingsHoKSSO(HoKSSOs);
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
         metadataGenerator.setKeyManager(keyManager());

@@ -21,6 +21,7 @@ import com.google.common.io.Resources;
 import com.vdenotaris.spring.boot.security.saml.web.CommonTestSupport;
 import com.vdenotaris.spring.boot.security.saml.web.TestConfig;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -31,15 +32,20 @@ import org.opensaml.common.SAMLObjectBuilder;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.Issuer;
 import org.opensaml.saml2.core.NameID;
+import org.opensaml.saml2.core.Subject;
+import org.opensaml.saml2.core.SubjectConfirmation;
 import org.opensaml.saml2.core.impl.AssertionMarshaller;
+import org.opensaml.saml2.core.impl.SubjectBuilder;
 import org.opensaml.saml2.metadata.EntitiesDescriptor;
 import org.opensaml.xml.ConfigurationException;
+import org.opensaml.xml.XMLObjectBuilder;
 import org.opensaml.xml.XMLObjectBuilderFactory;
 import org.opensaml.xml.io.Unmarshaller;
 import org.opensaml.xml.io.UnmarshallerFactory;
 import org.opensaml.xml.io.UnmarshallingException;
 import org.opensaml.xml.parse.BasicParserPool;
 import org.opensaml.xml.parse.XMLParserException;
+import org.opensaml.xml.signature.Signature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
@@ -90,10 +96,27 @@ public class SAMLUserDetailsServiceImplTest extends CommonTestSupport {
 		
 		
 		Assertion assertion = (Assertion) assertionBuilder.buildObject();
+		
 		SAMLObjectBuilder issuerBuilder = (SAMLObjectBuilder) builderFactory.getBuilder(Issuer.DEFAULT_ELEMENT_NAME);
         Issuer issuer = (Issuer) issuerBuilder.buildObject();
         issuer.setValue("https://california.demo.collaborativefusion.com/sso/saml2/idp/");
         assertion.setIssuer(issuer);
+        
+        SAMLObjectBuilder subjectBuilder = (SAMLObjectBuilder) builderFactory.getBuilder(Subject.DEFAULT_ELEMENT_NAME);
+        Subject subject = (Subject) subjectBuilder.buildObject();
+        
+        SAMLObjectBuilder subjectConfBuilder = (SAMLObjectBuilder) builderFactory.getBuilder(SubjectConfirmation.DEFAULT_ELEMENT_NAME);
+        SubjectConfirmation subjConfirmation = (SubjectConfirmation) subjectConfBuilder.buildObject();
+        subjConfirmation.setMethod("urn:oasis:names:tc:SAML:2.0:cm:bearer");
+        subject.getSubjectConfirmations().add(subjConfirmation);
+        
+        assertion.setSubject(subject);
+        
+        XMLObjectBuilder<Signature> signatureBuilder = Configuration.getBuilderFactory().getBuilder(Signature.DEFAULT_ELEMENT_NAME);
+        Signature signature = signatureBuilder.buildObject(Signature.DEFAULT_ELEMENT_NAME);
+        
+        assertion.setSignature(signature);
+        
         return assertion;
 	}
 	
@@ -143,5 +166,11 @@ public class SAMLUserDetailsServiceImplTest extends CommonTestSupport {
 
         assertTrue(authority instanceof GrantedPermission);
         assertEquals(USER_ROLE, ((GrantedPermission)authority).getAuthority());
+    }
+    
+    @Test
+    public void testCreateSignature(){
+    	Signature signature = userDetailsService.createSignature();
+    	Assert.assertNotNull(signature);
     }
 }

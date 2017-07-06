@@ -15,6 +15,7 @@ allowBypass=true
 #keystore information
 keystoreUsername=username
 keystorePassword=password
+keystorePath=classpath:/saml/samlKeystore.jks
 
 pulseOID=PULSE_ID_HERE
 
@@ -30,6 +31,10 @@ jwtIssuer=CALEMSA
 jwtAudience=CALEMSA
 jwtExpirationTimeMinutesInTheFuture=30
 jwtNotBeforeMinutesInThePast=4
+
+# certificate that the user agent presents through the browser
+# name here is what the alias is called in the keystore
+hokCertificate=pulse
 
 server.ssl.key-store: src/main/resources/keystore.p12
 server.ssl.key-store-password: <insert password>
