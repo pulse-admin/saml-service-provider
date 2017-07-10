@@ -397,8 +397,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public SAMLEntryPoint samlEntryPoint() {
         SAMLEntryPoint samlEntryPoint = new SAMLEntryPoint();
-        samlEntryPoint.setWebSSOprofileHoK(webSSOprofileHoK());
-        //samlEntryPoint.setDefaultProfileOptions(defaultWebSSOProfileOptions());
+        //samlEntryPoint.setWebSSOprofileHoK(webSSOprofileHoK());
+        samlEntryPoint.setDefaultProfileOptions(defaultWebSSOProfileOptions());
         return samlEntryPoint;
     }
 
