@@ -29,11 +29,13 @@ import org.opensaml.Configuration;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.common.SAMLException;
 import org.opensaml.common.SAMLObjectBuilder;
+import org.opensaml.common.xml.SAMLConstants;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.Issuer;
 import org.opensaml.saml2.core.NameID;
 import org.opensaml.saml2.core.Subject;
 import org.opensaml.saml2.core.SubjectConfirmation;
+import org.opensaml.saml2.core.SubjectConfirmationData;
 import org.opensaml.saml2.core.impl.AssertionMarshaller;
 import org.opensaml.saml2.core.impl.SubjectBuilder;
 import org.opensaml.saml2.metadata.EntitiesDescriptor;
@@ -66,6 +68,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -105,9 +109,13 @@ public class SAMLUserDetailsServiceImplTest extends CommonTestSupport {
         SAMLObjectBuilder subjectBuilder = (SAMLObjectBuilder) builderFactory.getBuilder(Subject.DEFAULT_ELEMENT_NAME);
         Subject subject = (Subject) subjectBuilder.buildObject();
         
+        SAMLObjectBuilder subjectConfDataBuilder = (SAMLObjectBuilder) builderFactory.getBuilder(new QName(SAMLConstants.SAML20_NS,"SubjectConfirmationData","saml"));
+        SubjectConfirmationData subjectConfData = (SubjectConfirmationData) subjectConfDataBuilder.buildObject();
+        
         SAMLObjectBuilder subjectConfBuilder = (SAMLObjectBuilder) builderFactory.getBuilder(SubjectConfirmation.DEFAULT_ELEMENT_NAME);
         SubjectConfirmation subjConfirmation = (SubjectConfirmation) subjectConfBuilder.buildObject();
         subjConfirmation.setMethod("urn:oasis:names:tc:SAML:2.0:cm:bearer");
+        subjConfirmation.setSubjectConfirmationData(subjectConfData);
         subject.getSubjectConfirmations().add(subjConfirmation);
         
         assertion.setSubject(subject);
