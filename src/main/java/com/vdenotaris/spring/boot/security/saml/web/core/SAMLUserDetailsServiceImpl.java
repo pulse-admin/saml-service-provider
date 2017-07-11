@@ -49,7 +49,11 @@ import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.signature.XMLSignature;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.Attribute;
+import org.opensaml.saml2.core.SubjectConfirmationData;
 import org.opensaml.saml2.core.impl.AssertionMarshaller;
+import org.opensaml.saml2.core.impl.KeyInfoConfirmationDataTypeBuilder;
+import org.opensaml.saml2.core.impl.SubjectConfirmationDataBuilder;
+import org.opensaml.saml2.core.KeyInfoConfirmationDataType;
 import org.opensaml.ws.message.encoder.MessageEncodingException;
 import org.opensaml.xml.Configuration;
 import org.opensaml.xml.ConfigurationException;
@@ -73,6 +77,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -101,7 +107,9 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 	@Autowired Environment env;
 	
 	@Autowired private KeyManager keyManager;
-
+	
+	XMLObjectBuilderFactory builderFactory = Configuration.getBuilderFactory();
+	
 	public String getAssertionFromFile() throws IOException, ConfigurationException{
 		Resource pdFile = resourceLoader.getResource("classpath:assertion.xml");
 		return Resources.toString(pdFile.getURL(), Charsets.UTF_8);
@@ -110,7 +118,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 	public Signature createSignature(){
 		String alias = env.getProperty("keystoreUsername");
 		Credential signingCredential = keyManager.getCredential(alias);
-		XMLObjectBuilderFactory builderFactory = Configuration.getBuilderFactory();
+		
 		SignatureBuilder signatureBuilder = (SignatureBuilder) builderFactory
 				.getBuilder(Signature.DEFAULT_ELEMENT_NAME);
 		Signature assertionSignature = signatureBuilder.buildObject(Signature.DEFAULT_ELEMENT_NAME);
@@ -134,6 +142,25 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		assertionSignature.setKeyInfo(keyInfo);
 		return assertionSignature;
 	}
+	
+	public KeyInfoConfirmationDataType createSubjectConfirmationData(SubjectConfirmationData oldSubjConf, KeyInfo keyInfo){
+		KeyInfoConfirmationDataTypeBuilder subjConfBuilder = (KeyInfoConfirmationDataTypeBuilder) builderFactory.getBuilder(KeyInfoConfirmationDataType.TYPE_NAME);
+		KeyInfoConfirmationDataType subjConfData = subjConfBuilder.buildObject(KeyInfoConfirmationDataType.DEFAULT_ELEMENT_NAME);
+		
+		if(oldSubjConf.getInResponseTo() != null){
+			subjConfData.setInResponseTo(oldSubjConf.getInResponseTo());
+		}
+		if(oldSubjConf.getNotOnOrAfter() != null){
+			subjConfData.setNotOnOrAfter(oldSubjConf.getNotOnOrAfter());
+		}
+		if(oldSubjConf.getRecipient() != null){
+			subjConfData.setRecipient(oldSubjConf.getRecipient());
+		}
+		
+		subjConfData.getKeyInfos().add(keyInfo);
+		
+		return subjConfData;
+	}
 
 	public Object loadUserBySAML(SAMLCredential credential)
 			throws UsernameNotFoundException {
@@ -154,6 +181,16 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 			assertion.getSubject().getSubjectConfirmations().get(0).setMethod("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key");
 			Signature sig = createSignature();
 			assertion.setSignature(sig);
+			Element assertionElement = SAMLUtil.marshallMessage(assertion);
+			Node node = SAMLUtil.marshallMessage(sig.getKeyInfo());
+			Node firstDocImportedNode = assertionElement.getOwnerDocument().importNode(node, true);
+			NodeList nodeList = assertionElement.getElementsByTagName("*");
+			for(int i=0; i < nodeList.getLength(); i++){
+				Node nodeItem = nodeList.item(i);
+				if(nodeItem.getLocalName().equals("SubjectConfirmationData")){
+					nodeItem.appendChild(firstDocImportedNode);
+				}
+			}
 			try {
 				Configuration.getMarshallerFactory().getMarshaller(assertion).marshall(assertion);
 			} catch (MarshallingException e) {

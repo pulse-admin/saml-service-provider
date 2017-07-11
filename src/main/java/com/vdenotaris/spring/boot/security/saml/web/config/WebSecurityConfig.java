@@ -214,7 +214,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public WebSSOProfileConsumer webSSOprofileConsumer() {
         WebSSOProfileConsumerImpl profileConsumer = new WebSSOProfileConsumerImpl();
-        profileConsumer.setReleaseDOM(true);
+        profileConsumer.setReleaseDOM(false);
         profileConsumer.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
         return profileConsumer;
     }
@@ -326,7 +326,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public WebSSOProfileConsumerHoKImpl hokWebSSOProfile() {
     	 WebSSOProfileConsumerHoKImpl profileConsumer = new WebSSOProfileConsumerHoKImpl();
-    	 profileConsumer.setReleaseDOM(true);
+    	 profileConsumer.setReleaseDOM(false);
     	 profileConsumer.setResponseSkew(Integer.parseInt(env.getProperty("timingSkew")));
     	 return profileConsumer;
     }
@@ -397,8 +397,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public SAMLEntryPoint samlEntryPoint() {
         SAMLEntryPoint samlEntryPoint = new SAMLEntryPoint();
-        samlEntryPoint.setWebSSOprofileHoK(webSSOprofileHoK());
-        //samlEntryPoint.setDefaultProfileOptions(defaultWebSSOProfileOptions());
+        samlEntryPoint.setDefaultProfileOptions(defaultWebSSOProfileOptions());
         return samlEntryPoint;
     }
 
@@ -492,8 +491,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         } else {
             metadataGenerator.setEntityBaseURL("entityBaseUrl");
         }
-        Collection<String> webSSO = new ArrayList<String>();
-        metadataGenerator.setBindingsSSO(webSSO);
         metadataGenerator.setExtendedMetadata(extendedMetadata());
         metadataGenerator.setIncludeDiscoveryExtension(false);
         metadataGenerator.setKeyManager(keyManager());
