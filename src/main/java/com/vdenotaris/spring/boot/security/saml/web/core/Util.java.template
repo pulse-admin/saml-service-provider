@@ -18,8 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Util {
 	
-	//@Value("${serviceUrl")
-	private String serviceUrl = "https://localhost:9090";
+	private String serviceUrl = "serviceUrlHere";
 	
 	public String createPulseUserWithAssertion(JWTAuthenticatedUser jwtUser, String assertion) throws JsonProcessingException, UserRetrievalException{
 		RestTemplate query = new RestTemplate();
