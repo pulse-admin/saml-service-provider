@@ -131,6 +131,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 
 		X509KeyInfoGeneratorFactory kiFactory = new X509KeyInfoGeneratorFactory();
 		kiFactory.setEmitEntityCertificate(true);
+		kiFactory.setEmitPublicKeyValue(true);
 
 		KeyInfo keyInfo = null;
 		try {
@@ -179,6 +180,8 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 		try {
 			Assertion assertion = credential.getAuthenticationAssertion();
 			assertion.getSubject().getSubjectConfirmations().get(0).setMethod("urn:oasis:names:tc:SAML:2.0:cm:holder-of-key");
+			assertion.getIssuer().setFormat("urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName");
+			assertion.getIssuer().setValue("C=US, O=HHS-ONC, OU=NHIN, CN=pulse-broker.emsa.ca.gov");
 			Signature sig = createSignature();
 			assertion.setSignature(sig);
 			Element assertionElement = SAMLUtil.marshallMessage(assertion);

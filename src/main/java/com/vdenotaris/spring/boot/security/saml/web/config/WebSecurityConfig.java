@@ -297,7 +297,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     	protected String getUserAgentBase64Certificate(SAMLMessageContext context){
     		String x509 = null;
 			try {
-				x509 = Base64.encodeBytes(keyManager().getCertificate(env.getProperty("hokCertificate")).getEncoded());
+				x509 = Base64.encodeBytes(keyManager().getCertificate("pulse").getEncoded());
 			} catch (CertificateEncodingException e) {
 				e.printStackTrace();
 			}
@@ -349,7 +349,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public KeyManager keyManager() {
         DefaultResourceLoader loader = new DefaultResourceLoader();
         Resource storeFile = loader
-            .getResource(env.getProperty("keystorePath"));
+        		.getResource("classpath:/saml/samlKeystore.jks");
         String storePassword = env.getProperty("keystorePassword");
         String storeUsername = env.getProperty("keystoreUsername");
         Map<String, String> passwords = new HashMap<String, String>();
