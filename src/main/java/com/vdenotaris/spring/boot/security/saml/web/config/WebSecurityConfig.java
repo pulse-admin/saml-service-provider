@@ -349,7 +349,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public KeyManager keyManager() {
         DefaultResourceLoader loader = new DefaultResourceLoader();
         Resource storeFile = loader
-        		.getResource("classpath:/saml/samlKeystore.jks");
+        		.getResource(env.getProperty("keystorePath"));
         String storePassword = env.getProperty("keystorePassword");
         String storeUsername = env.getProperty("keystoreUsername");
         Map<String, String> passwords = new HashMap<String, String>();
