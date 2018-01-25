@@ -19,7 +19,7 @@ apply plugin: 'findbugs'
 apply plugin: 'checkstyle'
 
 checkstyle {
-    configFile = file("${project.rootDir}/chpl-checkstyle-checks.xml")
+    configFile = file("${project.rootDir}/checkstyle.xml")
     toolVersion = '6.7'
     ignoreFailures = true
 }
