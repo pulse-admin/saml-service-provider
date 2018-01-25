@@ -184,3 +184,4 @@ logs/
 /src/main/resources/application.properties
 /src/main/resources/keystore.p12
 /src/main/resources/server.cer
+/src/main/java/com/vdenotaris/spring/boot/security/saml/web/core/Util.java

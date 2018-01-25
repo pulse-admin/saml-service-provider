@@ -16,6 +16,14 @@ apply plugin: 'maven'
 apply plugin: 'spring-boot'
 apply plugin: 'findbugs'
 
+apply plugin: 'checkstyle'
+
+checkstyle {
+    configFile = file("${project.rootDir}/checkstyle.xml")
+    toolVersion = '6.7'
+    ignoreFailures = true
+}
+
 springBoot {
   executable = true
 }
